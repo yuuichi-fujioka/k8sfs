@@ -51,7 +51,6 @@ killall k8sfs  # うまいことkillする
 fusermount -u /mnt/k8s
 ```
 
-
 # TODO
 
 ※ 多分やらない
@@ -62,3 +61,4 @@ fusermount -u /mnt/k8s
 - [x] .metaで表示される情報をいい感じに -> .yamlでyamlを表示するように
 - [ ] 編集
 - [ ] テスト
+- [ ] タイムスタンプ
