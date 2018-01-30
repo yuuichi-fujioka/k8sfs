@@ -18,6 +18,8 @@ import (
 	"github.com/hanwen/go-fuse/fuse/pathfs"
 
 	// "k8s.io/apimachinery/pkg/api/errors"
+	"encoding/json"
+	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -38,7 +40,7 @@ func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse
 			Mode: fuse.S_IFDIR | 0755,
 		}, fuse.OK
 	case len(names) == 1:
-		if strings.HasSuffix(names[0], ".meta") {
+		if strings.HasSuffix(names[0], ".yaml") {
 			return &fuse.Attr{
 				Mode: fuse.S_IFREG | 0644, Size: uint64(len(name)),
 			}, fuse.OK
@@ -57,7 +59,7 @@ func (me *HelloFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntr
 		c = []fuse.DirEntry{}
 		for i := 0; i < len(me.Namespaces.Items); i++ {
 			c = append(c, fuse.DirEntry{Name: me.Namespaces.Items[i].GetName(), Mode: fuse.S_IFDIR})
-			c = append(c, fuse.DirEntry{Name: me.Namespaces.Items[i].GetName() + ".meta", Mode: fuse.S_IFREG})
+			c = append(c, fuse.DirEntry{Name: me.Namespaces.Items[i].GetName() + ".yaml", Mode: fuse.S_IFREG})
 		}
 		return c, fuse.OK
 	}
@@ -66,16 +68,19 @@ func (me *HelloFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntr
 
 func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
 	log.Printf("Open: %s\n", name)
-	if !strings.HasSuffix(name, ".meta") {
+	if !strings.HasSuffix(name, ".yaml") {
 		return nil, fuse.ENOENT
 	}
 
-	namespacename := strings.TrimSuffix(name, ".meta")
+	namespacename := strings.TrimSuffix(name, ".yaml")
 	for i := 0; i < len(me.Namespaces.Items); i++ {
 		if me.Namespaces.Items[i].GetName() != namespacename {
 			continue
 		}
-		return nodefs.NewDataFile([]byte(me.Namespaces.Items[i].String())), fuse.OK
+		jsondata, _ := json.Marshal(me.Namespaces.Items[i])
+		yaml, _ := yaml.JSONToYAML(jsondata)
+
+		return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 	}
 
 	return nil, fuse.ENOENT

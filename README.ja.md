@@ -23,13 +23,23 @@ total 4
 drwxr-xr-x 1 ubuntu ubuntu    0  1月  1  1970 .
 drwxr-xr-x 8 root   root   4096  1月 30 15:43 ..
 drwxr-xr-x 0 ubuntu ubuntu    0  1月  1  1970 default
--rw-r--r-- 1 ubuntu ubuntu   12  1月  1  1970 default.meta
+-rw-r--r-- 1 ubuntu ubuntu   12  1月  1  1970 default.yaml
 drwxr-xr-x 0 ubuntu ubuntu    0  1月  1  1970 kube-public
--rw-r--r-- 1 ubuntu ubuntu   16  1月  1  1970 kube-public.meta
+-rw-r--r-- 1 ubuntu ubuntu   16  1月  1  1970 kube-public.yaml
 drwxr-xr-x 0 ubuntu ubuntu    0  1月  1  1970 kube-system
--rw-r--r-- 1 ubuntu ubuntu   16  1月  1  1970 kube-system.meta
-$ cat /mnt/k8s/default.meta
-&Namespace{ObjectMeta:k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta{Name:default,GenerateName:,Namespace:,SelfLink:/api/v1/namespaces/default,UID:786341fa-eaed-11e7-9088-52540051b57e,ResourceVersion:29,Generation:0,CreationTimestamp:2017-12-27 19:05:30 +0900 JST,DeletionTimestamp:<nil>,DeletionGracePeriodSeconds:nil,Labels:map[string]string{},Annotations:map[string]string{},OwnerReferences:[],Finalizers:[],ClusterName:,Initializers:nil,},Spec:NamespaceSpec{Finalizers:[kubernetes],},Status:NamespaceStatus{Phase:Active,},}
+-rw-r--r-- 1 ubuntu ubuntu   16  1月  1  1970 kube-system.yaml
+$ cat /mnt/k8s/default.yaml
+metadata:
+  creationTimestamp: 2017-12-27T10:05:30Z
+  name: default
+  resourceVersion: "29"
+  selfLink: /api/v1/namespaces/default
+  uid: 786341fa-eaed-11e7-9088-52540051b57e
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
 ```
 
 ※まだフォルダの中は何も見えません。
@@ -49,5 +59,5 @@ fusermount -u /mnt/k8s
 - [ ] README 英語化
 - [ ] マウント時にしか情報を取得しないので、goroutine + watchでなんとかする
 - [ ] namespaceの中を見えるように
-- [ ] .metaで表示される情報をいい感じに
+- [x] .metaで表示される情報をいい感じに -> .yamlでyamlを表示するように
 - [ ] 編集
