@@ -61,3 +61,4 @@ fusermount -u /mnt/k8s
 - [ ] namespaceの中を見えるように
 - [x] .metaで表示される情報をいい感じに -> .yamlでyamlを表示するように
 - [ ] 編集
+- [ ] テスト
