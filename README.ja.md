@@ -40,3 +40,14 @@ $ cat /mnt/k8s/default.meta
 killall k8sfs  # うまいことkillする
 fusermount -u /mnt/k8s
 ```
+
+
+# TODO
+
+※ 多分やらない
+
+- [ ] README 英語化
+- [ ] マウント時にしか情報を取得しないので、goroutine + watchでなんとかする
+- [ ] namespaceの中を見えるように
+- [ ] .metaで表示される情報をいい感じに
+- [ ] 編集
