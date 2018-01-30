@@ -75,7 +75,7 @@ func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file 
 		if me.Namespaces.Items[i].GetName() != namespacename {
 			continue
 		}
-		return nodefs.NewDataFile([]byte(me.Namespaces.Items[0].String())), fuse.OK
+		return nodefs.NewDataFile([]byte(me.Namespaces.Items[i].String())), fuse.OK
 	}
 
 	return nil, fuse.ENOENT
