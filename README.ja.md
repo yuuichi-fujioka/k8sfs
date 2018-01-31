@@ -62,3 +62,4 @@ fusermount -u /mnt/k8s
 - [ ] 編集
 - [ ] テスト
 - [ ] タイムスタンプ
+- [ ] .yamlでKind, apiVersionを出力
