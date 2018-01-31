@@ -75,9 +75,9 @@ func (me *HelloFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntr
 	log.Printf("OpenDir: %s\n", name)
 	if name == "" {
 		c = []fuse.DirEntry{}
-		for i := 0; i < len(me.Namespaces.Items); i++ {
-			c = append(c, fuse.DirEntry{Name: me.Namespaces.Items[i].GetName(), Mode: fuse.S_IFDIR})
-			c = append(c, fuse.DirEntry{Name: me.Namespaces.Items[i].GetName() + ".yaml", Mode: fuse.S_IFREG})
+		for _, namespace := range me.Namespaces.Items {
+			c = append(c, fuse.DirEntry{Name: namespace.GetName(), Mode: fuse.S_IFDIR})
+			c = append(c, fuse.DirEntry{Name: namespace.GetName() + ".yaml", Mode: fuse.S_IFREG})
 		}
 		return c, fuse.OK
 	}
@@ -101,11 +101,11 @@ func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file 
 }
 
 func (me *HelloFs) GetNamespace(name string) (*corev1.Namespace, error) {
-	for i := 0; i < len(me.Namespaces.Items); i++ {
-		if me.Namespaces.Items[i].GetName() != name {
+	for _, namespace := range me.Namespaces.Items {
+		if namespace.GetName() != name {
 			continue
 		}
-		return &me.Namespaces.Items[i], nil
+		return &namespace, nil
 	}
 	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
 }
@@ -157,8 +157,8 @@ func main() {
 	}
 
 	log.Printf("%d Namespaces are exist\n", len(namespacelist.Items))
-	for i := 0; i < len(namespacelist.Items); i++ {
-		log.Printf("%v\n", namespacelist.Items[i])
+	for _, v := range namespacelist.Items {
+		log.Printf("%v\n", v)
 	}
 
 	if len(flag.Args()) < 1 {
