@@ -56,7 +56,7 @@ fusermount -u /mnt/k8s
 ※ 多分やらない
 
 - [ ] README 英語化
-- [ ] マウント時にしか情報を取得しないので、goroutine + watchでなんとかする
+- [x] マウント時にしか情報を取得しないので、goroutine + watchでなんとかする
 - [ ] namespaceの中を見えるように
 - [x] .metaで表示される情報をいい感じに -> .yamlでyamlを表示するように
 - [ ] 編集

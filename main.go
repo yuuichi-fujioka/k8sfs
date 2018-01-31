@@ -23,13 +23,14 @@ import (
 	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 type K8sFs struct {
 	pathfs.FileSystem
-	Namespaces *corev1.NamespaceList
+	Namespaces []corev1.Namespace
 }
 
 func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
@@ -75,7 +76,7 @@ func (me *K8sFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry,
 	log.Printf("OpenDir: %s\n", name)
 	if name == "" {
 		c = []fuse.DirEntry{}
-		for _, namespace := range me.Namespaces.Items {
+		for _, namespace := range me.Namespaces {
 			c = append(c, fuse.DirEntry{Name: namespace.GetName(), Mode: fuse.S_IFDIR})
 			c = append(c, fuse.DirEntry{Name: namespace.GetName() + ".yaml", Mode: fuse.S_IFREG})
 		}
@@ -100,8 +101,33 @@ func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file no
 	return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 }
 
+func (me *K8sFs) AddNamespace(ns *corev1.Namespace) {
+	me.Namespaces = append(me.Namespaces, *ns)
+}
+
+func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
+	removedNsName := ns.GetName()
+	newlist := me.Namespaces
+	for i, namespace := range me.Namespaces {
+		if namespace.GetName() == removedNsName {
+			newlist = append(me.Namespaces[:i], me.Namespaces[i+1:]...)
+			break
+		}
+	}
+	me.Namespaces = newlist
+}
+
+func (me *K8sFs) UpdateNamespace(ns *corev1.Namespace) {
+	for i, namespace := range me.Namespaces {
+		if namespace.GetName() == ns.GetName() {
+			me.Namespaces[i] = *ns
+			return
+		}
+	}
+}
+
 func (me *K8sFs) GetNamespace(name string) (*corev1.Namespace, error) {
-	for _, namespace := range me.Namespaces.Items {
+	for _, namespace := range me.Namespaces {
 		if namespace.GetName() != name {
 			continue
 		}
@@ -150,22 +176,40 @@ func main() {
 		panic(err.Error())
 	}
 
-	opts := metav1.ListOptions{}
-	namespacelist, err := clientset.CoreV1().Namespaces().List(opts)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	log.Printf("%d Namespaces are exist\n", len(namespacelist.Items))
-	for _, v := range namespacelist.Items {
-		log.Printf("%v\n", v)
-	}
-
 	if len(flag.Args()) < 1 {
 		log.Fatal("Usage:\n  hello MOUNTPOINT")
 	}
 	log.Printf("argments: %v\n", flag.Args())
-	nfs := pathfs.NewPathNodeFs(&K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: namespacelist}, nil)
+
+	k8sfs := K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: []corev1.Namespace{}}
+
+	go func() {
+		wi, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+		if err != nil {
+			panic(err.Error())
+		}
+		ch := wi.ResultChan()
+		for {
+			ev := <-ch
+			ns, ok := ev.Object.(*corev1.Namespace)
+			if !ok {
+				panic("???!?!??!?")
+			}
+
+			log.Println(ns)
+
+			switch ev.Type {
+			case watch.Added:
+				k8sfs.AddNamespace(ns)
+			case watch.Modified:
+				k8sfs.UpdateNamespace(ns)
+			case watch.Deleted:
+				k8sfs.RemoveNamespace(ns)
+			}
+		}
+	}()
+
+	nfs := pathfs.NewPathNodeFs(&k8sfs, nil)
 	server, _, err := nodefs.MountRoot(flag.Arg(0), nfs.Root(), nil)
 	if err != nil {
 		log.Fatalf("Mount fail: %v\n", err)
