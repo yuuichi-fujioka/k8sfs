@@ -44,7 +44,7 @@ func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse
 		var attr *fuse.Attr
 		var namespacename string
 		if strings.HasSuffix(names[0], ".yaml") {
-			attr = &fuse.Attr{Mode: fuse.S_IFREG | 0644, Size: 0}
+			attr = &fuse.Attr{Mode: fuse.S_IFREG | 0644}
 			namespacename = strings.TrimSuffix(names[0], ".yaml")
 		} else {
 			attr = &fuse.Attr{Mode: fuse.S_IFDIR | 0755}
@@ -58,6 +58,13 @@ func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse
 		attr.Ctime = uint64(namespace.GetCreationTimestamp().Unix())
 		attr.Mtime = attr.Ctime
 		attr.Atime = attr.Ctime
+
+		// TODO caching
+		if data, err := me.GetNamespaceYaml(namespacename); err != nil {
+			attr.Size = 0
+		} else {
+			attr.Size = uint64(len(data))
+		}
 
 		return attr, fuse.OK
 	}
@@ -84,12 +91,11 @@ func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file 
 	}
 
 	namespacename := strings.TrimSuffix(name, ".yaml")
-	namespace, err := me.GetNamespace(namespacename)
+
+	yaml, err := me.GetNamespaceYaml(namespacename)
 	if err != nil {
 		return nil, fuse.ENOENT
 	}
-	jsondata, _ := json.Marshal(namespace)
-	yaml, _ := yaml.JSONToYAML(jsondata)
 
 	return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 }
@@ -102,6 +108,24 @@ func (me *HelloFs) GetNamespace(name string) (*corev1.Namespace, error) {
 		return &me.Namespaces.Items[i], nil
 	}
 	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
+}
+
+func (me *HelloFs) GetNamespaceYaml(name string) ([]byte, error) {
+	namespace, err := me.GetNamespace(name)
+	if err != nil {
+		return nil, err
+	}
+
+	jsondata, err := json.Marshal(namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	yaml, err := yaml.JSONToYAML(jsondata)
+	if err != nil {
+		return nil, err
+	}
+	return yaml, nil
 }
 
 func main() {

@@ -19,16 +19,15 @@ k8sfs -kubeconfig ~/.kube/config /mnt/k8s  # パスはなんでもいい。
 
 ```
 $ ls -la /mnt/k8s  # namespaceの一覧が見える
-
 total 4
 drwxr-xr-x 1 ubuntu  ubuntu     0  1月  1  1970 .
 drwxr-xr-x 8 root    root    4096  1月 30 15:43 ..
-drwxr-xr-x 0 ubuntu  ubuntu     0 12月 27 19:05 default
--rw-r--r-- 1 ubuntu  ubuntu     0 12月 27 19:05 default.yaml
-drwxr-xr-x 0 ubuntu  ubuntu     0 12月 27 19:05 kube-public
--rw-r--r-- 1 ubuntu  ubuntu     0 12月 27 19:05 kube-public.yaml
-drwxr-xr-x 0 ubuntu  ubuntu     0 12月 27 19:05 kube-system
--rw-r--r-- 1 ubuntu  ubuntu     0 12月 27 19:05 kube-system.yaml
+drwxr-xr-x 0 ubuntu  ubuntu   234 12月 27 19:05 default
+-rw-r--r-- 1 ubuntu  ubuntu   234 12月 27 19:05 default.yaml
+drwxr-xr-x 0 ubuntu  ubuntu   242 12月 27 19:05 kube-public
+-rw-r--r-- 1 ubuntu  ubuntu   242 12月 27 19:05 kube-public.yaml
+drwxr-xr-x 0 ubuntu  ubuntu   241 12月 27 19:05 kube-system
+-rw-r--r-- 1 ubuntu  ubuntu   241 12月 27 19:05 kube-system.yaml
 $ cat /mnt/k8s/default.yaml
 metadata:
   creationTimestamp: 2017-12-27T10:05:30Z
