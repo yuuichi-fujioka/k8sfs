@@ -27,12 +27,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-type HelloFs struct {
+type K8sFs struct {
 	pathfs.FileSystem
 	Namespaces *corev1.NamespaceList
 }
 
-func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
+func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
 	log.Printf("GetAttr: %s\n", name)
 	names := strings.Split(name, "/")
 	switch {
@@ -71,7 +71,7 @@ func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse
 	return nil, fuse.ENOENT
 }
 
-func (me *HelloFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
+func (me *K8sFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
 	log.Printf("OpenDir: %s\n", name)
 	if name == "" {
 		c = []fuse.DirEntry{}
@@ -84,7 +84,7 @@ func (me *HelloFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntr
 	return nil, fuse.ENOENT
 }
 
-func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
+func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
 	log.Printf("Open: %s\n", name)
 	if !strings.HasSuffix(name, ".yaml") {
 		return nil, fuse.ENOENT
@@ -100,7 +100,7 @@ func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file 
 	return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 }
 
-func (me *HelloFs) GetNamespace(name string) (*corev1.Namespace, error) {
+func (me *K8sFs) GetNamespace(name string) (*corev1.Namespace, error) {
 	for _, namespace := range me.Namespaces.Items {
 		if namespace.GetName() != name {
 			continue
@@ -110,7 +110,7 @@ func (me *HelloFs) GetNamespace(name string) (*corev1.Namespace, error) {
 	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
 }
 
-func (me *HelloFs) GetNamespaceYaml(name string) ([]byte, error) {
+func (me *K8sFs) GetNamespaceYaml(name string) ([]byte, error) {
 	namespace, err := me.GetNamespace(name)
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func main() {
 		log.Fatal("Usage:\n  hello MOUNTPOINT")
 	}
 	log.Printf("argments: %v\n", flag.Args())
-	nfs := pathfs.NewPathNodeFs(&HelloFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: namespacelist}, nil)
+	nfs := pathfs.NewPathNodeFs(&K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: namespacelist}, nil)
 	server, _, err := nodefs.MountRoot(flag.Arg(0), nfs.Root(), nil)
 	if err != nil {
 		log.Fatalf("Mount fail: %v\n", err)
