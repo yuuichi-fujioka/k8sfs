@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -40,15 +41,25 @@ func (me *HelloFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse
 			Mode: fuse.S_IFDIR | 0755,
 		}, fuse.OK
 	case len(names) == 1:
+		var attr *fuse.Attr
+		var namespacename string
 		if strings.HasSuffix(names[0], ".yaml") {
-			return &fuse.Attr{
-				Mode: fuse.S_IFREG | 0644, Size: uint64(len(name)),
-			}, fuse.OK
+			attr = &fuse.Attr{Mode: fuse.S_IFREG | 0644, Size: 0}
+			namespacename = strings.TrimSuffix(names[0], ".yaml")
 		} else {
-			return &fuse.Attr{
-				Mode: fuse.S_IFDIR | 0755,
-			}, fuse.OK
+			attr = &fuse.Attr{Mode: fuse.S_IFDIR | 0755}
+			namespacename = names[0]
 		}
+
+		namespace, err := me.GetNamespace(namespacename)
+		if err != nil {
+			return nil, fuse.ENOENT
+		}
+		attr.Ctime = uint64(namespace.GetCreationTimestamp().Unix())
+		attr.Mtime = attr.Ctime
+		attr.Atime = attr.Ctime
+
+		return attr, fuse.OK
 	}
 	return nil, fuse.ENOENT
 }
@@ -73,17 +84,24 @@ func (me *HelloFs) Open(name string, flags uint32, context *fuse.Context) (file 
 	}
 
 	namespacename := strings.TrimSuffix(name, ".yaml")
+	namespace, err := me.GetNamespace(namespacename)
+	if err != nil {
+		return nil, fuse.ENOENT
+	}
+	jsondata, _ := json.Marshal(namespace)
+	yaml, _ := yaml.JSONToYAML(jsondata)
+
+	return nodefs.NewDataFile([]byte(yaml)), fuse.OK
+}
+
+func (me *HelloFs) GetNamespace(name string) (*corev1.Namespace, error) {
 	for i := 0; i < len(me.Namespaces.Items); i++ {
-		if me.Namespaces.Items[i].GetName() != namespacename {
+		if me.Namespaces.Items[i].GetName() != name {
 			continue
 		}
-		jsondata, _ := json.Marshal(me.Namespaces.Items[i])
-		yaml, _ := yaml.JSONToYAML(jsondata)
-
-		return nodefs.NewDataFile([]byte(yaml)), fuse.OK
+		return &me.Namespaces.Items[i], nil
 	}
-
-	return nil, fuse.ENOENT
+	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
 }
 
 func main() {
