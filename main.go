@@ -8,151 +8,20 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
 
 	// "k8s.io/apimachinery/pkg/api/errors"
-	"encoding/json"
-	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
-
-type K8sFs struct {
-	pathfs.FileSystem
-	Namespaces []corev1.Namespace
-}
-
-func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
-	log.Printf("GetAttr: %s\n", name)
-	names := strings.Split(name, "/")
-	switch {
-	case name == "":
-		return &fuse.Attr{
-			Mode: fuse.S_IFDIR | 0755,
-		}, fuse.OK
-	case len(names) == 1:
-		var attr *fuse.Attr
-		var namespacename string
-		if strings.HasSuffix(names[0], ".yaml") {
-			attr = &fuse.Attr{Mode: fuse.S_IFREG | 0644}
-			namespacename = strings.TrimSuffix(names[0], ".yaml")
-		} else {
-			attr = &fuse.Attr{Mode: fuse.S_IFDIR | 0755}
-			namespacename = names[0]
-		}
-
-		namespace, err := me.GetNamespace(namespacename)
-		if err != nil {
-			return nil, fuse.ENOENT
-		}
-		attr.Ctime = uint64(namespace.GetCreationTimestamp().Unix())
-		attr.Mtime = attr.Ctime
-		attr.Atime = attr.Ctime
-
-		// TODO caching
-		if data, err := me.GetNamespaceYaml(namespacename); err != nil {
-			attr.Size = 0
-		} else {
-			attr.Size = uint64(len(data))
-		}
-
-		return attr, fuse.OK
-	}
-	return nil, fuse.ENOENT
-}
-
-func (me *K8sFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
-	log.Printf("OpenDir: %s\n", name)
-	if name == "" {
-		c = []fuse.DirEntry{}
-		for _, namespace := range me.Namespaces {
-			c = append(c, fuse.DirEntry{Name: namespace.GetName(), Mode: fuse.S_IFDIR})
-			c = append(c, fuse.DirEntry{Name: namespace.GetName() + ".yaml", Mode: fuse.S_IFREG})
-		}
-		return c, fuse.OK
-	}
-	return nil, fuse.ENOENT
-}
-
-func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-	log.Printf("Open: %s\n", name)
-	if !strings.HasSuffix(name, ".yaml") {
-		return nil, fuse.ENOENT
-	}
-
-	namespacename := strings.TrimSuffix(name, ".yaml")
-
-	yaml, err := me.GetNamespaceYaml(namespacename)
-	if err != nil {
-		return nil, fuse.ENOENT
-	}
-
-	return nodefs.NewDataFile([]byte(yaml)), fuse.OK
-}
-
-func (me *K8sFs) AddNamespace(ns *corev1.Namespace) {
-	me.Namespaces = append(me.Namespaces, *ns)
-}
-
-func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
-	removedNsName := ns.GetName()
-	newlist := me.Namespaces
-	for i, namespace := range me.Namespaces {
-		if namespace.GetName() == removedNsName {
-			newlist = append(me.Namespaces[:i], me.Namespaces[i+1:]...)
-			break
-		}
-	}
-	me.Namespaces = newlist
-}
-
-func (me *K8sFs) UpdateNamespace(ns *corev1.Namespace) {
-	for i, namespace := range me.Namespaces {
-		if namespace.GetName() == ns.GetName() {
-			me.Namespaces[i] = *ns
-			return
-		}
-	}
-}
-
-func (me *K8sFs) GetNamespace(name string) (*corev1.Namespace, error) {
-	for _, namespace := range me.Namespaces {
-		if namespace.GetName() != name {
-			continue
-		}
-		return &namespace, nil
-	}
-	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
-}
-
-func (me *K8sFs) GetNamespaceYaml(name string) ([]byte, error) {
-	namespace, err := me.GetNamespace(name)
-	if err != nil {
-		return nil, err
-	}
-
-	jsondata, err := json.Marshal(namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	yaml, err := yaml.JSONToYAML(jsondata)
-	if err != nil {
-		return nil, err
-	}
-	return yaml, nil
-}
 
 func main() {
 
@@ -181,7 +50,7 @@ func main() {
 	}
 	log.Printf("argments: %v\n", flag.Args())
 
-	k8sfs := K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: []corev1.Namespace{}}
+	k8sfs := K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: []NamespaceFs{}}
 
 	go func() {
 		wi, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
