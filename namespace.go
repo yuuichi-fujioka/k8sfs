@@ -17,12 +17,14 @@ import (
 type NamespaceFs struct {
 	corev1.Namespace
 	*PodsFs
+	*ServicesFs
 }
 
 func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
 	return NamespaceFs{
-		Namespace: *ns,
-		PodsFs:    NewPodsFs(),
+		Namespace:  *ns,
+		PodsFs:     NewPodsFs(),
+		ServicesFs: NewServicesFs(),
 	}
 }
 
@@ -65,6 +67,9 @@ func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Contex
 		case "po":
 			attr, status := me.PodsFs.GetAttr(names[1:], context)
 			return attr, status
+		case "svc":
+			attr, status := me.ServicesFs.GetAttr(names[1:], context)
+			return attr, status
 		}
 	}
 	return nil, fuse.ENOENT
@@ -79,7 +84,7 @@ func (me *NamespaceFs) OpenDir(names []string, context *fuse.Context) (c []fuse.
 			// fuse.DirEntry{Name: "sa", Mode: fuse.S_IFDIR},
 			// fuse.DirEntry{Name: "deploy", Mode: fuse.S_IFDIR},
 			// fuse.DirEntry{Name: "ds", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "svc", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "svc", Mode: fuse.S_IFDIR},
 			// fuse.DirEntry{Name: "ing", Mode: fuse.S_IFDIR},
 		}
 		// TODO
@@ -89,6 +94,9 @@ func (me *NamespaceFs) OpenDir(names []string, context *fuse.Context) (c []fuse.
 		switch names[0] {
 		case "po":
 			c, status := me.PodsFs.OpenDir(names[1:], context)
+			return c, status
+		case "svc":
+			c, status := me.ServicesFs.OpenDir(names[1:], context)
 			return c, status
 		}
 	}
@@ -116,6 +124,9 @@ func (me *NamespaceFs) Open(name string, names []string, flags uint32, context *
 		switch names[0] {
 		case "po":
 			data, status := me.PodsFs.Open(names[1:], flags, context)
+			return data, status
+		case "svc":
+			data, status := me.ServicesFs.Open(names[1:], flags, context)
 			return data, status
 		default:
 			return nil, fuse.ENOENT

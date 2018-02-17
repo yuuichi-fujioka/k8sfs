@@ -2,7 +2,7 @@
 
 Manage k8s via filesystem
 
-NOTE: At this time, it is just possible to see namespace yet.
+NOTE: At this time, it is just possible to see namespace, pod and services yet.
 
 ## Usage
 
@@ -45,6 +45,7 @@ total 0
 drwxr-xr-x 1 ubuntu  ubuntu  234  2月  8 08:53 .
 drwxr-xr-x 1 ubuntu  ubuntu    0  1月  1  1970 ..
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 po
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 svc
 $ ls -la /mnt/k8s/default/po # ポッド一覧
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu     0  2月  8 08:53 .

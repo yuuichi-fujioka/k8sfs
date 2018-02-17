@@ -2,7 +2,7 @@
 
 ファイルシステムでk8sを操作する
 
-※ まだNamespaceが見れるだけです。
+※ まだNamespace、Pod、Serviceが見れるだけです。
 
 ## 使い方
 
@@ -45,6 +45,7 @@ total 0
 drwxr-xr-x 1 ubuntu  ubuntu  234  2月  8 08:53 .
 drwxr-xr-x 1 ubuntu  ubuntu    0  1月  1  1970 ..
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 po
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 svc
 $ ls -la /mnt/k8s/default/po # ポッド一覧
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu     0  2月  8 08:53 .

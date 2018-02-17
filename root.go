@@ -92,6 +92,8 @@ func (me *K8sFs) AddNamespace(ns *corev1.Namespace) {
 	nsfs := NewNamespaceFs(ns)
 	// watch Pods C_UD
 	nsfs.PodsFs.Watch(ns.GetName())
+	// watch Services C_UD
+	nsfs.ServicesFs.Watch(ns.GetName())
 
 	me.Namespaces = append(me.Namespaces, nsfs)
 
@@ -103,6 +105,7 @@ func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
 	for i, namespace := range me.Namespaces {
 		if namespace.Namespace.GetName() == removedNsName {
 			namespace.PodsFs.Stop()
+			namespace.ServicesFs.Stop()
 			newlist = append(me.Namespaces[:i], me.Namespaces[i+1:]...)
 			break
 		}
