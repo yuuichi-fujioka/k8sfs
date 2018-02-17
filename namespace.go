@@ -16,6 +16,14 @@ import (
 
 type NamespaceFs struct {
 	corev1.Namespace
+	*PodsFs
+}
+
+func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
+	return NamespaceFs{
+		Namespace: *ns,
+		PodsFs:    NewPodsFs(),
+	}
 }
 
 func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
@@ -41,30 +49,81 @@ func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Contex
 		}
 
 		return attr, fuse.OK
+	case len(names) == 1:
+		Ctime := uint64(me.Namespace.GetCreationTimestamp().Unix())
+		attr := &fuse.Attr{
+			Mode:  fuse.S_IFDIR | 0755,
+			Ctime: Ctime,
+			Mtime: Ctime,
+			Atime: Ctime,
+			Size:  0,
+		}
+
+		return attr, fuse.OK
+	default:
+		switch names[0] {
+		case "po":
+			attr, status := me.PodsFs.GetAttr(names[1:], context)
+			return attr, status
+		}
 	}
 	return nil, fuse.ENOENT
 }
 
 func (me *NamespaceFs) OpenDir(names []string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
+	log.Printf("OpenDir: %s\n", names)
+	if len(names) == 0 {
+		c = []fuse.DirEntry{
+			fuse.DirEntry{Name: "po", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "rs", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "sa", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "deploy", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "ds", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "svc", Mode: fuse.S_IFDIR},
+			// fuse.DirEntry{Name: "ing", Mode: fuse.S_IFDIR},
+		}
+		// TODO
+		return c, fuse.OK
+	}
+	if len(names) == 1 {
+		switch names[0] {
+		case "po":
+			c, status := me.PodsFs.OpenDir(names[1:], context)
+			return c, status
+		}
+	}
 	// TODO
 	return nil, fuse.ENOENT
 }
 
 func (me *NamespaceFs) Open(name string, names []string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
+	switch {
+	case len(names) == 0:
 
-	if !strings.HasSuffix(name, ".yaml") {
-		// TODO
-		return nil, fuse.ENOENT
-	} else {
+		if !strings.HasSuffix(name, ".yaml") {
+			// TODO
+			return nil, fuse.ENOENT
+		} else {
 
-		yaml, err := me.GetYaml()
-		if err != nil {
+			yaml, err := me.GetYaml()
+			if err != nil {
+				return nil, fuse.ENOENT
+			}
+
+			return nodefs.NewDataFile([]byte(yaml)), fuse.OK
+		}
+	default:
+		switch names[0] {
+		case "po":
+			data, status := me.PodsFs.Open(names[1:], flags, context)
+			return data, status
+		default:
 			return nil, fuse.ENOENT
 		}
-
-		return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 	}
 }
+
+// TODO Update, Delete
 
 func (me *NamespaceFs) GetYaml() ([]byte, error) {
 	jsondata, err := json.Marshal(me.Namespace)

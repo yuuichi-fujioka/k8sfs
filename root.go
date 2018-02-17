@@ -89,7 +89,12 @@ func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file no
 }
 
 func (me *K8sFs) AddNamespace(ns *corev1.Namespace) {
-	me.Namespaces = append(me.Namespaces, NamespaceFs{Namespace: *ns})
+	nsfs := NewNamespaceFs(ns)
+	// watch Pods C_UD
+	nsfs.PodsFs.Watch(ns.GetName())
+
+	me.Namespaces = append(me.Namespaces, nsfs)
+
 }
 
 func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
@@ -97,6 +102,7 @@ func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
 	newlist := me.Namespaces
 	for i, namespace := range me.Namespaces {
 		if namespace.Namespace.GetName() == removedNsName {
+			namespace.PodsFs.Stop()
 			newlist = append(me.Namespaces[:i], me.Namespaces[i+1:]...)
 			break
 		}
@@ -107,7 +113,7 @@ func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
 func (me *K8sFs) UpdateNamespace(ns *corev1.Namespace) {
 	for i, namespace := range me.Namespaces {
 		if namespace.GetName() == ns.GetName() {
-			me.Namespaces[i] = NamespaceFs{Namespace: *ns}
+			me.Namespaces[i] = NewNamespaceFs(ns)
 			return
 		}
 	}

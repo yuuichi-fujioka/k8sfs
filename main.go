@@ -17,6 +17,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+var clientset *kubernetes.Clientset
+
 func main() {
 
 	var kubeconfig *string
@@ -34,7 +36,7 @@ func main() {
 	}
 
 	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
