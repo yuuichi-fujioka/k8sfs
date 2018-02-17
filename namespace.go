@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -20,12 +21,31 @@ type NamespaceFs struct {
 	*ServicesFs
 }
 
+type NsChildFs interface {
+	Watch(nsname string)
+	Stop()
+	GetAttr(names []string, context *fuse.Context) (*fuse.Attr, fuse.Status)
+	OpenDir(names []string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status)
+	Open(names []string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status)
+}
+
 func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
 	return NamespaceFs{
 		Namespace:  *ns,
 		PodsFs:     NewPodsFs(),
 		ServicesFs: NewServicesFs(),
 	}
+}
+
+func (me *NamespaceFs) getChildFs(name string) (NsChildFs, error) {
+	switch name {
+	case "po":
+		return me.PodsFs, nil
+	case "svc":
+		return me.ServicesFs, nil
+	}
+
+	return nil, fmt.Errorf("%s is not supported yet", name)
 }
 
 func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
@@ -63,14 +83,12 @@ func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Contex
 
 		return attr, fuse.OK
 	default:
-		switch names[0] {
-		case "po":
-			attr, status := me.PodsFs.GetAttr(names[1:], context)
-			return attr, status
-		case "svc":
-			attr, status := me.ServicesFs.GetAttr(names[1:], context)
-			return attr, status
+		cfs, err := me.getChildFs(names[0])
+		if err != nil {
+			return nil, fuse.ENOENT
 		}
+		attr, status := cfs.GetAttr(names[1:], context)
+		return attr, status
 	}
 	return nil, fuse.ENOENT
 }
@@ -91,14 +109,12 @@ func (me *NamespaceFs) OpenDir(names []string, context *fuse.Context) (c []fuse.
 		return c, fuse.OK
 	}
 	if len(names) == 1 {
-		switch names[0] {
-		case "po":
-			c, status := me.PodsFs.OpenDir(names[1:], context)
-			return c, status
-		case "svc":
-			c, status := me.ServicesFs.OpenDir(names[1:], context)
-			return c, status
+		cfs, err := me.getChildFs(names[0])
+		if err != nil {
+			return nil, fuse.ENOENT
 		}
+		c, status := cfs.OpenDir(names[1:], context)
+		return c, status
 	}
 	// TODO
 	return nil, fuse.ENOENT
@@ -121,16 +137,12 @@ func (me *NamespaceFs) Open(name string, names []string, flags uint32, context *
 			return nodefs.NewDataFile([]byte(yaml)), fuse.OK
 		}
 	default:
-		switch names[0] {
-		case "po":
-			data, status := me.PodsFs.Open(names[1:], flags, context)
-			return data, status
-		case "svc":
-			data, status := me.ServicesFs.Open(names[1:], flags, context)
-			return data, status
-		default:
+		cfs, err := me.getChildFs(names[0])
+		if err != nil {
 			return nil, fuse.ENOENT
 		}
+		data, status := cfs.Open(names[1:], flags, context)
+		return data, status
 	}
 }
 
