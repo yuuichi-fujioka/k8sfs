@@ -55,12 +55,12 @@ drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 rc
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 sa
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 secrets
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 svc
-$ ls -la /mnt/k8s/default/po # ポッド一覧
+$ ls -la /mnt/k8s/default/po # pod list
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu     0  2月  8 08:53 .
 drwxr-xr-x 0 ubuntu  ubuntu   234  2月  8 08:53 ..
 -rw-r--r-- 1 ubuntu  ubuntu  2260  2月 17 10:16 nginx-8586cf59-zltvn.yaml
-$ cat /mnt/k8s/default/po/nginx-8586cf59-zltvn.yaml  # podのyaml
+$ cat /mnt/k8s/default/po/nginx-8586cf59-zltvn.yaml  # pod yaml
 metadata:
   creationTimestamp: 2018-02-17T01:16:08Z
   generateName: nginx-8586cf59-
