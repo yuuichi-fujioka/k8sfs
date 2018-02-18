@@ -17,8 +17,17 @@ import (
 
 type NamespaceFs struct {
 	corev1.Namespace
-	PodsFs     NsChildFs
-	ServicesFs NsChildFs
+	PodsFs                  NsChildFs
+	ServicesFs              NsChildFs
+	DeploymentFs            NsChildFs
+	IngressFs               NsChildFs
+	ReplicationControllerFs NsChildFs
+	SecretFs                NsChildFs
+	ServiceAccountFs        NsChildFs
+	EndpointFs              NsChildFs
+	ConfigMapFs             NsChildFs
+	PersistentVolumeClaimFs NsChildFs
+	EventFs                 NsChildFs
 }
 
 type NsChildFs interface {
@@ -31,9 +40,18 @@ type NsChildFs interface {
 
 func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
 	return NamespaceFs{
-		Namespace:  *ns,
-		PodsFs:     NewSimpleFs(&PodResource{}),
-		ServicesFs: NewSimpleFs(&ServiceResource{}),
+		Namespace:               *ns,
+		PodsFs:                  NewSimpleFs(&PodResource{}),
+		ServicesFs:              NewSimpleFs(&ServiceResource{}),
+		DeploymentFs:            NewSimpleFs(&DeploymentResource{}),
+		IngressFs:               NewSimpleFs(&IngressResource{}),
+		ReplicationControllerFs: NewSimpleFs(&ReplicationControllerResource{}),
+		SecretFs:                NewSimpleFs(&SecretResource{}),
+		ServiceAccountFs:        NewSimpleFs(&ServiceAccountResource{}),
+		EndpointFs:              NewSimpleFs(&EndpointResource{}),
+		ConfigMapFs:             NewSimpleFs(&ConfigMapResource{}),
+		PersistentVolumeClaimFs: NewSimpleFs(&PersistentVolumeClaimResource{}),
+		EventFs:                 NewSimpleFs(&EventResource{}),
 	}
 }
 
@@ -43,6 +61,24 @@ func (me *NamespaceFs) getChildFs(name string) (NsChildFs, error) {
 		return me.PodsFs, nil
 	case "svc":
 		return me.ServicesFs, nil
+	case "deploy":
+		return me.DeploymentFs, nil
+	case "ing":
+		return me.IngressFs, nil
+	case "rc":
+		return me.ReplicationControllerFs, nil
+	case "secrets":
+		return me.SecretFs, nil
+	case "sa":
+		return me.ServiceAccountFs, nil
+	case "ep":
+		return me.EndpointFs, nil
+	case "cm":
+		return me.ConfigMapFs, nil
+	case "pvc":
+		return me.PersistentVolumeClaimFs, nil
+	case "ev":
+		return me.EventFs, nil
 	}
 
 	return nil, fmt.Errorf("%s is not supported yet", name)
@@ -51,11 +87,29 @@ func (me *NamespaceFs) getChildFs(name string) (NsChildFs, error) {
 func (me *NamespaceFs) WatchAll() {
 	me.PodsFs.Watch(me.Name)
 	me.ServicesFs.Watch(me.Name)
+	me.DeploymentFs.Watch(me.Name)
+	me.IngressFs.Watch(me.Name)
+	me.ReplicationControllerFs.Watch(me.Name)
+	me.SecretFs.Watch(me.Name)
+	me.ServiceAccountFs.Watch(me.Name)
+	me.EndpointFs.Watch(me.Name)
+	me.ConfigMapFs.Watch(me.Name)
+	me.PersistentVolumeClaimFs.Watch(me.Name)
+	me.EventFs.Watch(me.Name)
 }
 
 func (me *NamespaceFs) StopAll() {
 	me.PodsFs.Stop()
 	me.ServicesFs.Stop()
+	me.DeploymentFs.Stop()
+	me.IngressFs.Stop()
+	me.ReplicationControllerFs.Stop()
+	me.SecretFs.Stop()
+	me.ServiceAccountFs.Stop()
+	me.EndpointFs.Stop()
+	me.ConfigMapFs.Stop()
+	me.PersistentVolumeClaimFs.Stop()
+	me.EventFs.Stop()
 }
 
 func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
@@ -108,14 +162,17 @@ func (me *NamespaceFs) OpenDir(names []string, context *fuse.Context) (c []fuse.
 	if len(names) == 0 {
 		c = []fuse.DirEntry{
 			fuse.DirEntry{Name: "po", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "rs", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "sa", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "deploy", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "ds", Mode: fuse.S_IFDIR},
 			fuse.DirEntry{Name: "svc", Mode: fuse.S_IFDIR},
-			// fuse.DirEntry{Name: "ing", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "deploy", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "ing", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "rc", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "secrets", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "sa", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "ep", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "cm", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "pvc", Mode: fuse.S_IFDIR},
+			fuse.DirEntry{Name: "ev", Mode: fuse.S_IFDIR},
 		}
-		// TODO
 		return c, fuse.OK
 	}
 	if len(names) == 1 {

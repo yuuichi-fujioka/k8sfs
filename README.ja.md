@@ -2,7 +2,7 @@
 
 ファイルシステムでk8sを操作する
 
-※ まだNamespace、Pod、Serviceが見れるだけです。
+※ まだNamespace、Pod、Service、Deployments、Ingress、etc...が見れるだけです。
 
 ## 使い方
 
@@ -11,7 +11,7 @@
 * マウントする
 
 ```
-go get -u github.com/yuuichi-fujioka/k8sfs
+go get -u github.com/yuuichi-ubuntu /k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s  # パスはなんでもいい。
 ```
 
@@ -44,7 +44,16 @@ $ ls -la /mnt/k8s/default/ # リソースごとのフォルダが見える
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu  234  2月  8 08:53 .
 drwxr-xr-x 1 ubuntu  ubuntu    0  1月  1  1970 ..
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 cm
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 deploy
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ep
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ev
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ing
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 po
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 pvc
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 rc
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 sa
+drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 secrets
 drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 svc
 $ ls -la /mnt/k8s/default/po # ポッド一覧
 total 0
