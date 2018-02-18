@@ -17,8 +17,8 @@ import (
 
 type NamespaceFs struct {
 	corev1.Namespace
-	*PodsFs
-	*ServicesFs
+	PodsFs     NsChildFs
+	ServicesFs NsChildFs
 }
 
 type NsChildFs interface {
@@ -32,8 +32,8 @@ type NsChildFs interface {
 func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
 	return NamespaceFs{
 		Namespace:  *ns,
-		PodsFs:     NewPodsFs(),
-		ServicesFs: NewServicesFs(),
+		PodsFs:     NewSimpleFs(&PodResource{}),
+		ServicesFs: NewSimpleFs(&ServiceResource{}),
 	}
 }
 
@@ -46,6 +46,16 @@ func (me *NamespaceFs) getChildFs(name string) (NsChildFs, error) {
 	}
 
 	return nil, fmt.Errorf("%s is not supported yet", name)
+}
+
+func (me *NamespaceFs) WatchAll() {
+	me.PodsFs.Watch(me.Name)
+	me.ServicesFs.Watch(me.Name)
+}
+
+func (me *NamespaceFs) StopAll() {
+	me.PodsFs.Stop()
+	me.ServicesFs.Stop()
 }
 
 func (me *NamespaceFs) GetAttr(name string, names []string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
