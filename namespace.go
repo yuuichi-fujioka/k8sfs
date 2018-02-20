@@ -41,17 +41,17 @@ type NsChildFs interface {
 func NewNamespaceFs(ns *corev1.Namespace) *NamespaceFs {
 	return &NamespaceFs{
 		Namespace:               ns,
-		PodsFs:                  NewSimpleFs(&PodResource{}),
-		ServicesFs:              NewSimpleFs(&ServiceResource{}),
-		DeploymentFs:            NewSimpleFs(&DeploymentResource{}),
-		IngressFs:               NewSimpleFs(&IngressResource{}),
-		ReplicationControllerFs: NewSimpleFs(&ReplicationControllerResource{}),
-		SecretFs:                NewSimpleFs(&SecretResource{}),
-		ServiceAccountFs:        NewSimpleFs(&ServiceAccountResource{}),
-		EndpointFs:              NewSimpleFs(&EndpointResource{}),
-		ConfigMapFs:             NewSimpleFs(&ConfigMapResource{}),
-		PersistentVolumeClaimFs: NewSimpleFs(&PersistentVolumeClaimResource{}),
-		EventFs:                 NewSimpleFs(&EventResource{}),
+		PodsFs:                  NewSimpleFs("po", &PodResource{}),
+		ServicesFs:              NewSimpleFs("svc", &ServiceResource{}),
+		DeploymentFs:            NewSimpleFs("deploy", &DeploymentResource{}),
+		IngressFs:               NewSimpleFs("ing", &IngressResource{}),
+		ReplicationControllerFs: NewSimpleFs("rc", &ReplicationControllerResource{}),
+		SecretFs:                NewSimpleFs("secrets", &SecretResource{}),
+		ServiceAccountFs:        NewSimpleFs("sa", &ServiceAccountResource{}),
+		EndpointFs:              NewSimpleFs("ep", &EndpointResource{}),
+		ConfigMapFs:             NewSimpleFs("cm", &ConfigMapResource{}),
+		PersistentVolumeClaimFs: NewSimpleFs("pvc", &PersistentVolumeClaimResource{}),
+		EventFs:                 NewSimpleFs("ev", &EventResource{}),
 	}
 }
 

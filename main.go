@@ -66,13 +66,13 @@ func main() {
 
 			switch ev.Type {
 			case watch.Added:
-				log.Printf("%s is Added", ns.Name)
+				log.Printf("ns/%s is Added", ns.Name)
 				k8sfs.AddNamespace(ns)
 			case watch.Modified:
-				log.Printf("%s is Modified ", ns.Name)
+				log.Printf("ns/%s is Modified ", ns.Name)
 				k8sfs.UpdateNamespace(ns)
 			case watch.Deleted:
-				log.Printf("%s is Killed", ns.Name)
+				log.Printf("ns/%s is Killed", ns.Name)
 				k8sfs.RemoveNamespace(ns)
 			}
 		}

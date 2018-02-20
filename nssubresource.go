@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"strings"
 
 	"github.com/hanwen/go-fuse/fuse"
@@ -28,12 +27,14 @@ type SimpleFs struct {
 	SubResource
 	watch.Interface
 	objects []*runtime.Object
+	aka     string
 }
 
-func NewSimpleFs(subresource SubResource) *SimpleFs {
+func NewSimpleFs(aka string, subresource SubResource) *SimpleFs {
 	return &SimpleFs{
 		SubResource: subresource,
 		objects:     []*runtime.Object{},
+		aka:         aka,
 	}
 }
 
@@ -47,7 +48,7 @@ func (me *SimpleFs) Watch(nsname string) {
 
 	go func() {
 		ch := me.Interface.ResultChan()
-		log.Printf("start watching %v@%s\n", reflect.TypeOf(me.SubResource), nsname)
+		log.Printf("start watching %v@%s\n", me.aka, nsname)
 		for {
 			ev, ok := <-ch
 			if !ok {
@@ -56,17 +57,17 @@ func (me *SimpleFs) Watch(nsname string) {
 
 			switch ev.Type {
 			case watch.Added:
-				log.Printf("%s is Added to %s", me.GetName(&ev.Object), nsname)
+				log.Printf("%s/%s is Added to %s", me.aka, me.GetName(&ev.Object), nsname)
 				me.add(&ev.Object)
 			case watch.Modified:
-				log.Printf("%s@%s is Modified ", me.GetName(&ev.Object), nsname)
+				log.Printf("%s/%s@%s is Modified ", me.aka, me.GetName(&ev.Object), nsname)
 				me.update(&ev.Object)
 			case watch.Deleted:
-				log.Printf("%s@%s is Killed", me.GetName(&ev.Object), nsname)
+				log.Printf("%s/%s@%s is Killed", me.aka, me.GetName(&ev.Object), nsname)
 				me.remove(&ev.Object)
 			}
 		}
-		log.Printf("watching is finished %v@%s\n", reflect.TypeOf(me.SubResource), nsname)
+		log.Printf("watching is finished %v@%s\n", me.aka, nsname)
 	}()
 }
 
