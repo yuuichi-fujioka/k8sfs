@@ -55,7 +55,10 @@ func main() {
 		}
 		ch := wi.ResultChan()
 		for {
-			ev := <-ch
+			ev, ok := <-ch
+			if !ok {
+				panic("namespace watch channel is closed")
+			}
 			ns, ok := ev.Object.(*corev1.Namespace)
 			if !ok {
 				panic("???!?!??!?")
