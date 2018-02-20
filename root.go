@@ -109,9 +109,9 @@ func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
 }
 
 func (me *K8sFs) UpdateNamespace(ns *corev1.Namespace) {
-	for i, namespace := range me.Namespaces {
+	for _, namespace := range me.Namespaces {
 		if namespace.GetName() == ns.GetName() {
-			me.Namespaces[i] = NewNamespaceFs(ns)
+			namespace.Namespace = *ns
 			return
 		}
 	}
