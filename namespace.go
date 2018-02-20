@@ -16,7 +16,7 @@ import (
 )
 
 type NamespaceFs struct {
-	corev1.Namespace
+	*corev1.Namespace
 	PodsFs                  NsChildFs
 	ServicesFs              NsChildFs
 	DeploymentFs            NsChildFs
@@ -38,9 +38,9 @@ type NsChildFs interface {
 	Open(names []string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status)
 }
 
-func NewNamespaceFs(ns *corev1.Namespace) NamespaceFs {
-	return NamespaceFs{
-		Namespace:               *ns,
+func NewNamespaceFs(ns *corev1.Namespace) *NamespaceFs {
+	return &NamespaceFs{
+		Namespace:               ns,
 		PodsFs:                  NewSimpleFs(&PodResource{}),
 		ServicesFs:              NewSimpleFs(&ServiceResource{}),
 		DeploymentFs:            NewSimpleFs(&DeploymentResource{}),

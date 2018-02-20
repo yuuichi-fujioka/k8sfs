@@ -46,7 +46,7 @@ func main() {
 	}
 	log.Printf("argments: %v\n", flag.Args())
 
-	k8sfs := K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: []NamespaceFs{}}
+	k8sfs := K8sFs{FileSystem: pathfs.NewDefaultFileSystem(), Namespaces: []*NamespaceFs{}}
 
 	go func() {
 		wi, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})

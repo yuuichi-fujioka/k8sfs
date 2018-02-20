@@ -15,7 +15,7 @@ import (
 
 type K8sFs struct {
 	pathfs.FileSystem
-	Namespaces []NamespaceFs
+	Namespaces []*NamespaceFs
 }
 
 func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
@@ -111,7 +111,7 @@ func (me *K8sFs) RemoveNamespace(ns *corev1.Namespace) {
 func (me *K8sFs) UpdateNamespace(ns *corev1.Namespace) {
 	for _, namespace := range me.Namespaces {
 		if namespace.GetName() == ns.GetName() {
-			namespace.Namespace = *ns
+			namespace.Namespace = ns
 			return
 		}
 	}
@@ -122,7 +122,7 @@ func (me *K8sFs) GetNamespace(name string) (*NamespaceFs, error) {
 		if namespace.GetName() != name {
 			continue
 		}
-		return &namespace, nil
+		return namespace, nil
 	}
 	return nil, fmt.Errorf("Namespace \"%s\" is not found.", name)
 }
