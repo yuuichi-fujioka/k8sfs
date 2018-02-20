@@ -64,14 +64,15 @@ func main() {
 				panic("???!?!??!?")
 			}
 
-			log.Println(ns)
-
 			switch ev.Type {
 			case watch.Added:
+				log.Printf("%s is Added", ns.Name)
 				k8sfs.AddNamespace(ns)
 			case watch.Modified:
+				log.Printf("%s is Modified ", ns.Name)
 				k8sfs.UpdateNamespace(ns)
 			case watch.Deleted:
+				log.Printf("%s is Killed", ns.Name)
 				k8sfs.RemoveNamespace(ns)
 			}
 		}
