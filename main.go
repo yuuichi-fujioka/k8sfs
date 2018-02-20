@@ -42,7 +42,7 @@ func main() {
 	}
 
 	if len(flag.Args()) < 1 {
-		log.Fatal("Usage:\n  hello MOUNTPOINT")
+		log.Fatal("Usage:\n  k8sfs MOUNTPOINT")
 	}
 	log.Printf("argments: %v\n", flag.Args())
 
