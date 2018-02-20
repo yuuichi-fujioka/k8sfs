@@ -3,6 +3,7 @@
 ファイルシステムでk8sを操作する
 
 ※ まだNamespace、Pod、Service、Deployments、Ingress、etc...が見れるだけです。
+※ Namespaceだけ作成と削除ができます
 
 ## 使い方
 
@@ -145,6 +146,23 @@ status:
   startTime: 2018-02-17T01:16:08Z
 ```
 
+* 作る
+
+```
+$ mkdir /mnt/k8s/asdf  # Namespaceの作成
+```
+
+※ Namespace限定
+※ yaml指定での作成は未実装
+
+* 消す
+
+```
+$ rm /mnt/k8s/asdf.yaml  # Namespaceの削除
+```
+
+※ Namespace限定
+※ ディレクトリ指定での削除は実装しない。
 
 * 掃除する
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
@@ -11,11 +12,59 @@ import (
 
 	// "k8s.io/apimachinery/pkg/api/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type K8sFs struct {
 	pathfs.FileSystem
 	Namespaces []*NamespaceFs
+}
+
+func (me *K8sFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Status {
+	log.Printf("Mkdir: %s\n", name)
+	names := strings.Split(name, "/")
+	switch {
+	case len(names) == 1:
+		// Create a Namespace
+		namespacename := names[0]
+		ns := &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: namespacename,
+			},
+		}
+		_, err := clientset.CoreV1().Namespaces().Create(ns)
+		if err != nil {
+			log.Printf("error has occured. %v\n", err)
+			return fuse.EIO
+		}
+		// TODO Event handling should be smart.
+		for {
+			_, err := me.GetNamespace(namespacename)
+			if err == nil {
+				return fuse.OK
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	return fuse.ENOSYS
+}
+
+func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
+	log.Printf("Unlink: %s\n", name)
+	names := strings.Split(name, "/")
+	switch {
+	case len(names) == 1:
+		// Dlete a Namespace
+		namespacename := strings.TrimSuffix(names[0], ".yaml")
+		err := clientset.CoreV1().Namespaces().Delete(namespacename, &metav1.DeleteOptions{})
+		if err != nil {
+			log.Printf("error has occured. %v\n", err)
+			return fuse.EIO
+		}
+
+		return fuse.OK
+	}
+	return fuse.ENOSYS
 }
 
 func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
