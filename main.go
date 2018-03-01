@@ -21,6 +21,8 @@ var clientset *kubernetes.Clientset
 
 func main() {
 
+	startHandlingSignal()
+
 	var kubeconfig *string
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
