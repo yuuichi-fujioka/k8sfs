@@ -1,6 +1,8 @@
 package fuse
 
 import (
+	"log"
+
 	"github.com/hanwen/go-fuse/fuse"
 
 	corev1 "k8s.io/api/core/v1"
@@ -17,16 +19,6 @@ func NewNamespacesDir() *namespacesDir {
 	}
 }
 
-func (f *namespacesDir) GetAttr(out *fuse.Attr) fuse.Status {
-	ctime := uint64(0) // TODO cluster created at
-	out.Size = 4096    // block size?
-	out.Ctime = ctime
-	out.Mtime = ctime
-	out.Atime = ctime
-	out.Mode = fuse.S_IFDIR | 0755
-	return fuse.OK
-}
-
 func (f *namespacesDir) GetName() string {
 	return "namespaces"
 }
@@ -38,6 +30,12 @@ func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
 
 type namespaceDir struct {
 	objDir
+}
+
+func (f *namespaceDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
+	log.Printf("NS Dir OpenDir: \n")
+	c = []fuse.DirEntry{}
+	return c, fuse.OK
 }
 
 func NewNamespaceDir(obj *runtime.Object) *namespaceDir {
