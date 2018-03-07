@@ -53,6 +53,16 @@ func (f *namespaceDir) GetDir(name string) DirEntry {
 	return nil
 }
 
+func (f *namespaceDir) Update(obj *runtime.Object) {
+	ns, ok := (*obj).(*corev1.Namespace)
+	if !ok {
+		panic("!!!!")
+	}
+
+	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
+	f.metaObj = *meta
+}
+
 func NewNamespaceFile(obj *runtime.Object) *objFile {
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {
@@ -61,4 +71,14 @@ func NewNamespaceFile(obj *runtime.Object) *objFile {
 
 	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
 	return NewObjFile(obj, meta)
+}
+
+func UpdateNamespaceFile(f *objFile, obj *runtime.Object) {
+	ns, ok := (*obj).(*corev1.Namespace)
+	if !ok {
+		panic("!!!!")
+	}
+
+	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
+	f.Update(obj, meta)
 }

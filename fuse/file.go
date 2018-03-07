@@ -46,3 +46,12 @@ func (f *objFile) GetAttr(out *fuse.Attr) fuse.Status {
 	out.Mode = fuse.S_IFREG | 0644
 	return fuse.OK
 }
+
+func (f *objFile) Update(obj *runtime.Object, meta *metaObj) {
+	yaml, err := GenYaml(obj)
+	if err != nil {
+		panic("!!!")
+	}
+	f.yaml = yaml
+	f.metaObj = *meta
+}

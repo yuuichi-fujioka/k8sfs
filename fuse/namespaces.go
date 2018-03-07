@@ -59,6 +59,20 @@ func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
 }
 
 func (f *namespacesDir) UpdateNamespace(obj *runtime.Object) {
+
+	for i, dir := range f.dirs {
+		if dir.GetName() == name {
+			nsDir = (dir).(namespaceDir)
+			nsDir.Update(obj)
+			break
+		}
+	}
+	for i, file := range f.files {
+		if file.Name == name {
+			UpdateNamespaceFile(file, obj)
+			break
+		}
+	}
 }
 
 func (f *namespacesDir) DeleteNamespace(obj *runtime.Object) {
