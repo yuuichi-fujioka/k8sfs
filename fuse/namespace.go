@@ -1,41 +1,18 @@
 package fuse
 
 import (
-	"log"
-
 	"github.com/hanwen/go-fuse/fuse"
+	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type namespacesDir struct {
-	defaultDir
-}
-
-func NewNamespacesDir() *namespacesDir {
-	return &namespacesDir{
-		defaultDir: NewDefaultDir(),
-	}
-}
-
-func (f *namespacesDir) GetName() string {
-	return "namespaces"
-}
-
-func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
-	f.dirs = append(f.dirs, NewNamespaceDir(obj))
-	f.files = append(f.files, NewNamespaceFile(obj))
-}
-
 type namespaceDir struct {
-	objDir
-}
+	nodefs.File
+	defaultDir
 
-func (f *namespaceDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
-	log.Printf("NS Dir OpenDir: \n")
-	c = []fuse.DirEntry{}
-	return c, fuse.OK
+	metaObj
 }
 
 func NewNamespaceDir(obj *runtime.Object) *namespaceDir {
@@ -47,8 +24,33 @@ func NewNamespaceDir(obj *runtime.Object) *namespaceDir {
 	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
 
 	return &namespaceDir{
-		objDir: NewObjDir(meta),
+		File:       nodefs.NewDefaultFile(),
+		defaultDir: NewDefaultDir(),
+		metaObj:    *meta,
 	}
+}
+
+func (f *namespaceDir) GetName() string {
+	return f.Name
+}
+
+func (f *namespaceDir) GetAttr(out *fuse.Attr) fuse.Status {
+	out.Size = 4096 // block size?
+	out.Mode = fuse.S_IFDIR | 0755
+	SetAttrTime(&f.metaObj, out)
+	return fuse.OK
+}
+
+func (f *namespaceDir) GetFile() nodefs.File {
+	return f
+}
+
+func (f *namespaceDir) GetDir(name string) DirEntry {
+	if name == "" {
+		return f
+	}
+
+	return nil
 }
 
 func NewNamespaceFile(obj *runtime.Object) *objFile {

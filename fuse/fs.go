@@ -23,6 +23,7 @@ type K8sFs struct {
 
 func NewK8sFs() *K8sFs {
 	nsDir := NewNamespacesDir()
+	// TODO: begin testcode
 	go func() {
 		wi, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
 		if err != nil {
@@ -43,11 +44,14 @@ func NewK8sFs() *K8sFs {
 				nsDir.AddNamespace(&ev.Object)
 			case watch.Modified:
 				// Update
+				nsDir.UpdateNamespace(&ev.Object)
 			case watch.Deleted:
 				// Delete
+				nsDir.DeleteNamespace(&ev.Object)
 			}
 		}
 	}()
+	// TODO: finish testcode
 	return &K8sFs{
 		FileSystem: pathfs.NewDefaultFileSystem(),
 		root:       nsDir,
@@ -56,7 +60,7 @@ func NewK8sFs() *K8sFs {
 
 func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
 	log.Printf("GetAttr: %s\n", name)
-	f := me.root.GetFile(name)
+	f := GetFile(me.root, name)
 	if f == nil {
 		return nil, fuse.ENOENT
 	}
@@ -73,7 +77,7 @@ func (me *K8sFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry,
 
 func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
 	log.Printf("Open: %s\n", name)
-	f := me.root.GetFile(name)
+	f := GetFile(me.root, name)
 	return f, fuse.OK
 }
 
@@ -87,6 +91,7 @@ func Serve(mountPoint string) {
 	server.Serve()
 }
 
+// TODO: begin testcode
 var clientset *kubernetes.Clientset
 
 func TestMain() {
@@ -101,3 +106,5 @@ func TestMain() {
 
 	Serve(flag.Arg(0))
 }
+
+// TODO: finish testcode

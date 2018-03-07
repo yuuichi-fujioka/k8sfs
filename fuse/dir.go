@@ -1,9 +1,6 @@
 package fuse
 
 import (
-	"log"
-	"strings"
-
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 )
@@ -12,27 +9,25 @@ type DirEntry interface {
 	GetName() string
 	GetAttr(out *fuse.Attr) fuse.Status
 	OpenDir() (c []fuse.DirEntry, code fuse.Status)
-	GetFile(name string) nodefs.File
+	GetFile() nodefs.File
 	GetDir(name string) DirEntry
+	GetChildDirs() []DirEntry
+	GetChildFiles() []*objFile
 }
 
 type defaultDir struct {
-	nodefs.File
-
 	files []*objFile
 	dirs  []DirEntry
 }
 
 func NewDefaultDir() defaultDir {
 	return defaultDir{
-		File:  nodefs.NewDefaultFile(),
 		files: make([]*objFile, 0),
 		dirs:  make([]DirEntry, 0),
 	}
 }
 
 func (f *defaultDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
-	log.Printf("XXX OpenDir: %s\n", f.GetName())
 	c = []fuse.DirEntry{}
 	for _, object := range f.dirs {
 		c = append(c, fuse.DirEntry{Name: object.GetName(), Mode: fuse.S_IFDIR})
@@ -43,53 +38,12 @@ func (f *defaultDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
 	return c, fuse.OK
 }
 
-func (f *defaultDir) GetFile(name string) nodefs.File {
-	log.Printf("XXX GetFile: %s\n", name)
-	if name == "" {
-		return f
-	}
-	names := strings.Split(name, "/")
-	for _, child := range f.dirs {
-		if child.GetName() == names[0] {
-			return child.GetFile(strings.Join(names[1:], "/"))
-		}
-	}
-	for _, child := range f.files {
-		if child.Name+"."+child.Ext == names[0] {
-			return child
-		}
-	}
-	return nil
+func (f *defaultDir) GetChildDirs() []DirEntry {
+	return f.dirs
 }
 
-func (f *defaultDir) GetName() string {
-	return ""
-}
-
-func (f *defaultDir) GetDir(name string) DirEntry {
-	if name == "" {
-		return f
-	}
-
-	names := strings.Split(name, "/")
-
-	for _, child := range f.dirs {
-		if child.GetName() == names[0] {
-			return child.GetDir(strings.Join(names[1:], "/"))
-		}
-	}
-
-	return nil
-}
-
-func (f *defaultDir) GetAttr(out *fuse.Attr) fuse.Status {
-	ctime := uint64(0) // TODO cluster created at
-	out.Size = 4096    // block size?
-	out.Ctime = ctime
-	out.Mtime = ctime
-	out.Atime = ctime
-	out.Mode = fuse.S_IFDIR | 0755
-	return fuse.OK
+func (f *defaultDir) GetChildFiles() []*objFile {
+	return f.files
 }
 
 type objDir struct {
@@ -105,13 +59,9 @@ func NewObjDir(obj *metaObj) objDir {
 }
 
 func (f *objDir) GetAttr(out *fuse.Attr) fuse.Status {
-	log.Println("asdf")
-	ctime := uint64(f.GetCreationTimestamp().Unix())
 	out.Size = 4096 // block size?
-	out.Ctime = ctime
-	out.Mtime = ctime
-	out.Atime = ctime
 	out.Mode = fuse.S_IFDIR | 0755
+	SetAttrTime(&f.metaObj, out)
 	return fuse.OK
 }
 
