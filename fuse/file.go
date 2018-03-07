@@ -1,6 +1,9 @@
 package fuse
 
 import (
+	"log"
+	"strings"
+
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 

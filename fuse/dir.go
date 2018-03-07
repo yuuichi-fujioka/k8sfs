@@ -12,6 +12,11 @@ type DirEntry interface {
 	GetFile() nodefs.File
 	GetDir(name string) DirEntry
 	GetChildDirs() []DirEntry
+
+	Unlink(name string) (code fuse.Status)
+	Mkdir(name string, mode uint32) fuse.Status
+	Rmdir() (code fuse.Status)
+
 	GetChildFiles() []*objFile
 }
 

@@ -1,6 +1,8 @@
 package fuse
 
 import (
+	"log"
+
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
@@ -53,6 +55,23 @@ func (f *namespaceDir) GetDir(name string) DirEntry {
 	return nil
 }
 
+func (f *namespaceDir) Unlink(name string) (code fuse.Status) {
+	log.Printf("Unlink: %s at %s", name, f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
+
+func (f *namespaceDir) Mkdir(name string, mode uint32) fuse.Status {
+	log.Printf("Mkdir: %s at %s", name, f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
+
+func (f *namespaceDir) Rmdir() (code fuse.Status) {
+	log.Printf("Rmdir: %s", f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
 func (f *namespaceDir) Update(obj *runtime.Object) {
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {

@@ -1,6 +1,7 @@
 package fuse
 
 import (
+	"log"
 	"strings"
 
 	"github.com/hanwen/go-fuse/fuse"
@@ -53,6 +54,24 @@ func (f *namespacesDir) GetDir(name string) DirEntry {
 	return nil
 }
 
+func (f *namespacesDir) Unlink(name string) (code fuse.Status) {
+	log.Printf("Unlink: %s at %s", name, f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
+
+func (f *namespacesDir) Mkdir(name string, mode uint32) fuse.Status {
+	log.Printf("Mkdir: %s at %s", name, f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
+
+func (f *namespacesDir) Rmdir() (code fuse.Status) {
+	log.Printf("Rmdir: %s", f.GetName())
+	// TODO
+	return fuse.ENOSYS
+}
+
 func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
 	f.dirs = append(f.dirs, NewNamespaceDir(obj))
 	f.files = append(f.files, NewNamespaceFile(obj))
@@ -60,14 +79,23 @@ func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
 
 func (f *namespacesDir) UpdateNamespace(obj *runtime.Object) {
 
-	for i, dir := range f.dirs {
+	ns, ok := (*obj).(*corev1.Namespace)
+	if !ok {
+		panic("!!!!")
+	}
+
+	name := ns.Name
+	for _, dir := range f.dirs {
 		if dir.GetName() == name {
-			nsDir = (dir).(namespaceDir)
+			nsDir, ok := (dir).(*namespaceDir)
+			if !ok {
+				panic("!!!")
+			}
 			nsDir.Update(obj)
 			break
 		}
 	}
-	for i, file := range f.files {
+	for _, file := range f.files {
 		if file.Name == name {
 			UpdateNamespaceFile(file, obj)
 			break
