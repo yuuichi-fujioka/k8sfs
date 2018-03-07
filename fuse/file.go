@@ -55,3 +55,56 @@ func (f *objFile) Update(obj *runtime.Object, meta *metaObj) {
 	f.yaml = yaml
 	f.metaObj = *meta
 }
+
+type writableFile struct {
+	Name string
+	nodefs.File
+	data []byte
+}
+
+func NewWFile(name string) *writableFile {
+	f := &writableFile{
+		Name: name,
+		File: nodefs.NewDefaultFile(),
+		data: make([]byte, 0),
+	}
+	return f
+}
+
+func (f *writableFile) GetAttr(out *fuse.Attr) fuse.Status {
+	ctime := uint64(0)
+	out.Size = uint64(len(f.data))
+	out.Ctime = ctime
+	out.Mtime = ctime
+	out.Atime = ctime
+	out.Mode = fuse.S_IFREG | 0644
+	return fuse.OK
+}
+
+func (f *writableFile) Write(data []byte, off int64) (uint32, fuse.Status) {
+	log.Printf("Write: %s %d\n", f.Name, off)
+	f.data = append(f.data[:off], data...)
+	return uint32(len(data)), fuse.OK
+}
+
+func (f *writableFile) Read(buf []byte, off int64) (res fuse.ReadResult, code fuse.Status) {
+	log.Printf("Read: %s %d\n", f.Name, off)
+	end := int(off) + int(len(buf))
+	if end > len(f.data) {
+		end = len(f.data)
+	}
+
+	return fuse.ReadResultData(f.data[off:end]), fuse.OK
+}
+
+func (f *writableFile) InnerFile() nodefs.File {
+	return f.File
+}
+
+func (f *writableFile) Release() {
+	if !strings.HasPrefix(f.Name, ".") {
+		log.Printf("Relase: %s %s\n", f.Name, f.data)
+	} else {
+		log.Printf("Relase: %s\n", f.Name)
+	}
+}
