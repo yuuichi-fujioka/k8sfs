@@ -81,6 +81,21 @@ func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file no
 	return f, fuse.OK
 }
 
+func (me *K8sFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Status {
+	log.Printf("Mkdir: %s\n", name)
+	return fuse.ENOSYS
+}
+
+func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
+	log.Printf("Unlink: %s\n", name)
+	return fuse.ENOSYS
+}
+
+func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
+	log.Printf("Create: %s %o %o\n", name, flags, mode)
+	return nil, fuse.ENOSYS
+}
+
 func Serve(mountPoint string) {
 	k8sfs := NewK8sFs()
 	nfs := pathfs.NewPathNodeFs(k8sfs, nil)
