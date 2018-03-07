@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/yuuichi-fujioka/k8sfs/k8s"
+
 	"encoding/json"
 	"github.com/ghodss/yaml"
 
@@ -67,7 +69,7 @@ func SetAttrTime(obj *metaObj, out *fuse.Attr) {
 }
 
 func SetAttrTimeCluster(out *fuse.Attr) {
-	ctime := uint64(0) // TODO cluster created at
+	ctime := k8s.ClusterCreatedAt
 	out.Ctime = ctime
 	out.Mtime = ctime
 	out.Atime = ctime

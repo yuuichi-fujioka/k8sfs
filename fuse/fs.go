@@ -1,6 +1,7 @@
 package fuse
 
 import (
+	"flag"
 	"log"
 	"strings"
 
@@ -8,13 +9,10 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
 
-	"flag"
-
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes"
 )
 
 type K8sFs struct {
@@ -26,7 +24,7 @@ func NewK8sFs() *K8sFs {
 	nsDir := NewNamespacesDir()
 	// TODO: begin testcode
 	go func() {
-		wi, err := clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+		wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
 		if err != nil {
 			panic(err.Error())
 		}
@@ -117,20 +115,6 @@ func Serve(mountPoint string) {
 	server.Serve()
 }
 
-// TODO: begin testcode
-var clientset *kubernetes.Clientset
-
 func TestMain() {
-	clientset = k8s.GenClientSetFromFlags()
-
-	flag.Parse()
-
-	if len(flag.Args()) < 1 {
-		log.Fatal("Usage:\n  k8sfs MOUNTPOINT")
-	}
-	log.Printf("argments: %v\n", flag.Args())
-
 	Serve(flag.Arg(0))
 }
-
-// TODO: finish testcode
