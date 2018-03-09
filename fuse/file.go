@@ -68,19 +68,25 @@ func (f *objFile) Update(obj *runtime.Object, meta *metaObj) {
 	f.metaObj = *meta
 }
 
+type WFReleaseHandler interface {
+	HandleRelease(*writableFile)
+}
+
 type writableFile struct {
 	Name string
 	nodefs.File
-	data  []byte
-	ctime uint64
+	data    []byte
+	ctime   uint64
+	handler WFReleaseHandler
 }
 
-func NewWFile(name string) *writableFile {
+func NewWFile(name string, handler WFReleaseHandler) *writableFile {
 	f := &writableFile{
-		Name:  name,
-		File:  nodefs.NewDefaultFile(),
-		data:  make([]byte, 0),
-		ctime: uint64(time.Now().Unix()),
+		Name:    name,
+		File:    nodefs.NewDefaultFile(),
+		data:    make([]byte, 0),
+		ctime:   uint64(time.Now().Unix()),
+		handler: handler,
 	}
 	return f
 }
@@ -131,6 +137,9 @@ func (f *writableFile) Release() {
 		log.Printf("Relase: %s %s\n", f.Name, f.data)
 	} else {
 		log.Printf("Relase: %s\n", f.Name)
+	}
+	if f.handler != nil {
+		f.handler.HandleRelease(f)
 	}
 }
 

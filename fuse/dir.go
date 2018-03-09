@@ -79,7 +79,7 @@ func (f *defaultDir) RemoveTmpFile(name string) fuse.Status {
 }
 
 func (f *defaultDir) AddTmpFile(name string) nodefs.File {
-	tmp := NewWFile(name)
+	tmp := NewWFile(name, nil)
 	f.tmpFiles = append(f.tmpFiles, tmp)
 	return tmp
 }
