@@ -72,6 +72,13 @@ func (f *namespaceDir) Rmdir() (code fuse.Status) {
 	// TODO
 	return fuse.ENOSYS
 }
+
+func (f *namespaceDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
+	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.GetName(), flags, mode)
+	// TODO
+	return nil, fuse.ENOSYS
+}
+
 func (f *namespaceDir) Update(obj *runtime.Object) {
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {

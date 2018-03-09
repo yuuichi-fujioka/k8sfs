@@ -17,6 +17,7 @@ type DirEntry interface {
 	Mkdir(name string, mode uint32) fuse.Status
 	Rmdir() (code fuse.Status)
 
+	Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status)
 	GetChildFiles() []*objFile
 }
 

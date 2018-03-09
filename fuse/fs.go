@@ -102,7 +102,10 @@ func (me *K8sFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
 
 func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
 	log.Printf("fs/Create: %s %o %o\n", name, flags, mode)
-	return nil, fuse.ENOSYS
+
+	names := strings.Split(name, "/")
+	parentName := strings.Join(names[:len(names)-1], "/")
+	return me.root.GetDir(parentName).Create(names[len(names)-1], flags, mode)
 }
 
 func Serve(mountPoint string) {
