@@ -104,6 +104,9 @@ func (f *writableFile) GetAttr(out *fuse.Attr) fuse.Status {
 
 func (f *writableFile) Write(data []byte, off int64) (uint32, fuse.Status) {
 	log.Printf("Write: %s %d\n", f.Name, off)
+	if int64(len(f.data)) < off {
+		f.data = append(f.data, make([]byte, off-int64(len(f.data)))...)
+	}
 	f.data = append(f.data[:off], data...)
 	return uint32(len(data)), fuse.OK
 }
