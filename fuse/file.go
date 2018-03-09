@@ -3,6 +3,7 @@ package fuse
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
@@ -29,6 +30,14 @@ func NewObjFile(obj *runtime.Object, meta *metaObj) *objFile {
 		metaObj: *meta,
 		Ext:     "yaml",
 	}
+}
+
+func (f *objFile) GetName() string {
+	return f.Name + "." + f.Ext
+}
+
+func (f *objFile) GetFile() nodefs.File {
+	return f
 }
 
 func (f *objFile) Read(buf []byte, off int64) (res fuse.ReadResult, code fuse.Status) {
@@ -62,24 +71,33 @@ func (f *objFile) Update(obj *runtime.Object, meta *metaObj) {
 type writableFile struct {
 	Name string
 	nodefs.File
-	data []byte
+	data  []byte
+	ctime uint64
 }
 
 func NewWFile(name string) *writableFile {
 	f := &writableFile{
-		Name: name,
-		File: nodefs.NewDefaultFile(),
-		data: make([]byte, 0),
+		Name:  name,
+		File:  nodefs.NewDefaultFile(),
+		data:  make([]byte, 0),
+		ctime: uint64(time.Now().Unix()),
 	}
 	return f
 }
 
+func (f *writableFile) GetName() string {
+	return f.Name
+}
+
+func (f *writableFile) GetFile() nodefs.File {
+	return f
+}
+
 func (f *writableFile) GetAttr(out *fuse.Attr) fuse.Status {
-	ctime := uint64(0)
 	out.Size = uint64(len(f.data))
-	out.Ctime = ctime
-	out.Mtime = ctime
-	out.Atime = ctime
+	out.Ctime = f.ctime
+	out.Mtime = f.ctime
+	out.Atime = f.ctime
 	out.Mode = fuse.S_IFREG | 0644
 	return fuse.OK
 }

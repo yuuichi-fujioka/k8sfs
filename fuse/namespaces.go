@@ -57,7 +57,7 @@ func (f *namespacesDir) GetDir(name string) DirEntry {
 func (f *namespacesDir) Unlink(name string) (code fuse.Status) {
 	log.Printf("Unlink: %s at %s", name, f.GetName())
 	// TODO
-	return fuse.ENOSYS
+	return f.RemoveTmpFile(name)
 }
 
 func (f *namespacesDir) Mkdir(name string, mode uint32) fuse.Status {
@@ -75,7 +75,7 @@ func (f *namespacesDir) Rmdir() (code fuse.Status) {
 func (f *namespacesDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
 	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.GetName(), flags, mode)
 	// TODO
-	return nil, fuse.ENOSYS
+	return f.AddTmpFile(name), fuse.OK
 }
 
 func (f *namespacesDir) AddNamespace(obj *runtime.Object) {

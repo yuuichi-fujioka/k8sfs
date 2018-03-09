@@ -54,8 +54,8 @@ func GetFile(d DirEntry, name string) nodefs.File {
 		}
 	}
 	for _, child := range d.GetChildFiles() {
-		if child.Name+"."+child.Ext == names[0] {
-			return child
+		if child.GetName() == names[0] {
+			return child.GetFile()
 		}
 	}
 	return nil
