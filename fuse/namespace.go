@@ -89,7 +89,7 @@ func (f *namespaceDir) Update(obj *runtime.Object) {
 	f.metaObj = *meta
 }
 
-func NewNamespaceFile(obj *runtime.Object) *objFile {
+func NewNamespaceFile(obj *runtime.Object) *writableFile {
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
@@ -99,7 +99,7 @@ func NewNamespaceFile(obj *runtime.Object) *objFile {
 	return NewObjFile(obj, meta)
 }
 
-func UpdateNamespaceFile(f *objFile, obj *runtime.Object) {
+func UpdateNamespaceFile(f *writableFile, obj *runtime.Object) {
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")

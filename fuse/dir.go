@@ -27,14 +27,14 @@ type namedFile interface {
 }
 
 type defaultDir struct {
-	files    []*objFile
+	files    []*writableFile
 	dirs     []DirEntry
 	tmpFiles []*writableFile
 }
 
 func NewDefaultDir() defaultDir {
 	return defaultDir{
-		files: make([]*objFile, 0),
+		files: make([]*writableFile, 0),
 		dirs:  make([]DirEntry, 0),
 	}
 }
@@ -45,7 +45,7 @@ func (f *defaultDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
 		c = append(c, fuse.DirEntry{Name: object.GetName(), Mode: fuse.S_IFDIR})
 	}
 	for _, object := range f.files {
-		c = append(c, fuse.DirEntry{Name: object.Name + "." + object.Ext, Mode: fuse.S_IFREG})
+		c = append(c, fuse.DirEntry{Name: object.Name, Mode: fuse.S_IFREG})
 	}
 	for _, object := range f.tmpFiles {
 		c = append(c, fuse.DirEntry{Name: object.Name, Mode: fuse.S_IFREG})
