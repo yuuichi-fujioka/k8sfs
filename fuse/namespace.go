@@ -2,6 +2,7 @@ package fuse
 
 import (
 	"log"
+	"strings"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
@@ -25,11 +26,13 @@ func NewNamespaceDir(obj runtime.Object) *namespaceDir {
 
 	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
 
-	return &namespaceDir{
+	d := &namespaceDir{
 		File:       nodefs.NewDefaultFile(),
 		defaultDir: NewDefaultDir(),
 		metaObj:    *meta,
 	}
+	d.dirs = append(d.dirs, NewPodsDir(ns.Name))
+	return d
 }
 
 func (f *namespaceDir) GetName() string {
@@ -50,6 +53,14 @@ func (f *namespaceDir) GetFile() nodefs.File {
 func (f *namespaceDir) GetDir(name string) DirEntry {
 	if name == "" {
 		return f
+	}
+
+	names := strings.Split(name, "/")
+
+	for _, child := range f.dirs {
+		if child.GetName() == names[0] {
+			return child.GetDir(strings.Join(names[1:], "/"))
+		}
 	}
 
 	return nil
