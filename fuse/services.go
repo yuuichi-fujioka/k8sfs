@@ -98,7 +98,7 @@ func (f *servicesDir) UpdateService(obj runtime.Object) (updated bool) {
 
 	name := svc.Name
 	for _, file := range f.files {
-		if file.Name == name {
+		if file.Name == name+".yaml" {
 			UpdateServiceFile(file, obj)
 			updated = true
 			break
@@ -126,7 +126,7 @@ func (f *servicesDir) DeleteService(obj runtime.Object) {
 
 	newlist2 := f.files
 	for i, file := range f.files {
-		if file.Name == name {
+		if file.Name == name+".yaml" {
 			newlist2 = append(f.files[:i], f.files[i+1:]...)
 			break
 		}
