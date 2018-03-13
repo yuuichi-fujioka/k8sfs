@@ -32,6 +32,7 @@ func NewNamespaceDir(obj runtime.Object) *namespaceDir {
 		metaObj:    *meta,
 	}
 	d.dirs = append(d.dirs, NewPodsDir(ns.Name))
+	d.dirs = append(d.dirs, NewServicesDir(ns.Name))
 	return d
 }
 
