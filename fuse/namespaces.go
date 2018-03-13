@@ -3,6 +3,9 @@ package fuse
 import (
 	"log"
 	"strings"
+	"time"
+
+	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
@@ -56,14 +59,34 @@ func (f *namespacesDir) GetDir(name string) DirEntry {
 
 func (f *namespacesDir) Unlink(name string) (code fuse.Status) {
 	log.Printf("Unlink: %s at %s", name, f.GetName())
-	// TODO
-	return f.RemoveTmpFile(name)
+	code = f.RemoveTmpFile(name)
+	if code != fuse.ENOENT {
+		return
+	}
+
+	nsname := strings.TrimSuffix(name, ".yaml")
+	err := k8s.DeleteNamespace(nsname)
+	if err != nil {
+		return fuse.EIO
+	}
+	return fuse.OK
 }
 
 func (f *namespacesDir) Mkdir(name string, mode uint32) fuse.Status {
 	log.Printf("Mkdir: %s at %s", name, f.GetName())
-	// TODO
-	return fuse.ENOSYS
+
+	_, err := k8s.CreateNamespace(name)
+	if err != nil {
+		return fuse.EIO
+	}
+
+	for {
+		if f.GetDir(name) != nil {
+			return fuse.OK
+		}
+		// TODO Event handling should be smart.
+		time.Sleep(10 * time.Millisecond)
+	}
 }
 
 func (f *namespacesDir) Rmdir() (code fuse.Status) {
