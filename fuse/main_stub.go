@@ -30,13 +30,13 @@ func TestMain() {
 				switch ev.Type {
 				case watch.Added:
 					log.Println("Added")
-					nsDir.AddNamespace(&ev.Object)
+					nsDir.AddNamespace(ev.Object)
 				case watch.Modified:
 					// Update
-					nsDir.UpdateNamespace(&ev.Object)
+					nsDir.UpdateNamespace(ev.Object)
 				case watch.Deleted:
 					// Delete
-					nsDir.DeleteNamespace(&ev.Object)
+					nsDir.DeleteNamespace(ev.Object)
 				}
 			}
 		}

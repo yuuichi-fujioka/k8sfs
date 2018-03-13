@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func NewObjFile(obj *runtime.Object, meta *metaObj) *writableFile {
+func NewObjFile(obj runtime.Object, meta *metaObj) *writableFile {
 	yaml, err := GenYaml(obj)
 	if err != nil {
 		panic("!!!")
@@ -27,7 +27,7 @@ func NewObjFile(obj *runtime.Object, meta *metaObj) *writableFile {
 	return f
 }
 
-func (f *writableFile) Update(obj *runtime.Object, meta *metaObj) {
+func (f *writableFile) Update(obj runtime.Object, meta *metaObj) {
 	yaml, err := GenYaml(obj)
 	if err != nil {
 		panic("!!!")

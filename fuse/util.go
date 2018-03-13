@@ -28,7 +28,7 @@ func NewMetaObj(typeMeta *metav1.TypeMeta, objectMeta *metav1.ObjectMeta) *metaO
 	}
 }
 
-func GenYaml(obj *runtime.Object) ([]byte, error) {
+func GenYaml(obj runtime.Object) ([]byte, error) {
 	jsondata, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err

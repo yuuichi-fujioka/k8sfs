@@ -17,8 +17,8 @@ type namespaceDir struct {
 	metaObj
 }
 
-func NewNamespaceDir(obj *runtime.Object) *namespaceDir {
-	ns, ok := (*obj).(*corev1.Namespace)
+func NewNamespaceDir(obj runtime.Object) *namespaceDir {
+	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
@@ -79,8 +79,8 @@ func (f *namespaceDir) Create(name string, flags uint32, mode uint32) (file node
 	return nil, fuse.ENOSYS
 }
 
-func (f *namespaceDir) Update(obj *runtime.Object) {
-	ns, ok := (*obj).(*corev1.Namespace)
+func (f *namespaceDir) Update(obj runtime.Object) {
+	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
@@ -89,8 +89,8 @@ func (f *namespaceDir) Update(obj *runtime.Object) {
 	f.metaObj = *meta
 }
 
-func NewNamespaceFile(obj *runtime.Object) *writableFile {
-	ns, ok := (*obj).(*corev1.Namespace)
+func NewNamespaceFile(obj runtime.Object) *writableFile {
+	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
@@ -99,8 +99,8 @@ func NewNamespaceFile(obj *runtime.Object) *writableFile {
 	return NewObjFile(obj, meta)
 }
 
-func UpdateNamespaceFile(f *writableFile, obj *runtime.Object) {
-	ns, ok := (*obj).(*corev1.Namespace)
+func UpdateNamespaceFile(f *writableFile, obj runtime.Object) {
+	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
