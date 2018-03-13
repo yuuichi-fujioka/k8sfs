@@ -17,6 +17,7 @@ func TestMain() {
 }
 
 func watchAllNs() {
+	watchers := map[string]*nsWatcher{}
 	nsDir := Fs.root.(*namespacesDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
@@ -37,22 +38,21 @@ func watchAllNs() {
 				panic("!!!!")
 			}
 
+			nsname := ns.Name
+
 			switch ev.Type {
 			case watch.Added:
 				log.Println("ns/Added")
 				nsDir.AddNamespace(ev.Object)
-				go watchPods(ns.Name)
-				go watchServices(ns.Name)
-				go watchConfigMaps(ns.Name)
-				go watchDeployments(ns.Name)
-				go watchEndpoints(ns.Name)
-				go watchEvents(ns.Name)
-				go watchIngresses(ns.Name)
-				go watchPersistentVolumeClaims(ns.Name)
-				go watchReplicationControllers(ns.Name)
-				go watchServiceAccounts(ns.Name)
-				go watchSecrets(ns.Name)
 
+				nsw, ok := watchers[nsname]
+				if !ok {
+					nsw = NewNsWatcher(nsname)
+					watchers[nsname] = nsw
+				} else {
+					nsw.StopAll()
+				}
+				nsw.StartAll()
 			case watch.Modified:
 				// Update
 				nsDir.UpdateNamespace(ev.Object)
@@ -60,6 +60,10 @@ func watchAllNs() {
 				// Delete
 				nsDir.DeleteNamespace(ev.Object)
 				// TODO Stop, watcher
+				nsw, ok := watchers[nsname]
+				if ok {
+					nsw.StopAll()
+				}
 			}
 		}
 	}
