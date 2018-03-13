@@ -31,7 +31,16 @@ func NewNamespaceDir(obj runtime.Object) *namespaceDir {
 		defaultDir: NewDefaultDir(),
 		metaObj:    *meta,
 	}
+	d.dirs = append(d.dirs, NewConfigMapsDir(ns.Name))
+	d.dirs = append(d.dirs, NewDeploymentsDir(ns.Name))
+	d.dirs = append(d.dirs, NewEndpointsDir(ns.Name))
+	d.dirs = append(d.dirs, NewEventsDir(ns.Name))
+	d.dirs = append(d.dirs, NewIngressesDir(ns.Name))
+	d.dirs = append(d.dirs, NewPersistentVolumeClaimsDir(ns.Name))
 	d.dirs = append(d.dirs, NewPodsDir(ns.Name))
+	d.dirs = append(d.dirs, NewReplicationControllersDir(ns.Name))
+	d.dirs = append(d.dirs, NewSecretsDir(ns.Name))
+	d.dirs = append(d.dirs, NewServiceAccountsDir(ns.Name))
 	d.dirs = append(d.dirs, NewServicesDir(ns.Name))
 	return d
 }
