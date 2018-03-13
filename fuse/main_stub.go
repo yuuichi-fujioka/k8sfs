@@ -13,29 +13,31 @@ import (
 func TestMain() {
 	go func() {
 		nsDir := Fs.root.(*namespacesDir)
-		wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-
-		ch := wi.ResultChan()
-
 		for {
-			ev, ok := <-ch
-			if !ok {
-				return
+			wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+			if err != nil {
+				panic(err.Error())
 			}
 
-			switch ev.Type {
-			case watch.Added:
-				log.Println("Added")
-				nsDir.AddNamespace(&ev.Object)
-			case watch.Modified:
-				// Update
-				nsDir.UpdateNamespace(&ev.Object)
-			case watch.Deleted:
-				// Delete
-				nsDir.DeleteNamespace(&ev.Object)
+			ch := wi.ResultChan()
+
+			for {
+				ev, ok := <-ch
+				if !ok {
+					break
+				}
+
+				switch ev.Type {
+				case watch.Added:
+					log.Println("Added")
+					nsDir.AddNamespace(&ev.Object)
+				case watch.Modified:
+					// Update
+					nsDir.UpdateNamespace(&ev.Object)
+				case watch.Deleted:
+					// Delete
+					nsDir.DeleteNamespace(&ev.Object)
+				}
 			}
 		}
 	}()

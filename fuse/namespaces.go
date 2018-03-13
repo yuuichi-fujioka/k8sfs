@@ -79,16 +79,20 @@ func (f *namespacesDir) Create(name string, flags uint32, mode uint32) (file nod
 }
 
 func (f *namespacesDir) AddNamespace(obj *runtime.Object) {
-	f.dirs = append(f.dirs, NewNamespaceDir(obj))
-	f.files = append(f.files, NewNamespaceFile(obj))
+	if !f.UpdateNamespace(obj) {
+		f.dirs = append(f.dirs, NewNamespaceDir(obj))
+		f.files = append(f.files, NewNamespaceFile(obj))
+	}
 }
 
-func (f *namespacesDir) UpdateNamespace(obj *runtime.Object) {
+func (f *namespacesDir) UpdateNamespace(obj *runtime.Object) (updated bool) {
 
 	ns, ok := (*obj).(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
+
+	updated = false
 
 	name := ns.Name
 	for _, dir := range f.dirs {
@@ -98,15 +102,18 @@ func (f *namespacesDir) UpdateNamespace(obj *runtime.Object) {
 				panic("!!!")
 			}
 			nsDir.Update(obj)
+			updated = true
 			break
 		}
 	}
 	for _, file := range f.files {
 		if file.Name == name {
 			UpdateNamespaceFile(file, obj)
+			updated = true
 			break
 		}
 	}
+	return
 }
 
 func (f *namespacesDir) DeleteNamespace(obj *runtime.Object) {
