@@ -1,18 +1,12 @@
 package fuse
 
 import (
-	"flag"
 	"log"
 	"strings"
 
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
-
-	"github.com/yuuichi-fujioka/k8sfs/k8s"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 )
 
 type K8sFs struct {
@@ -22,35 +16,6 @@ type K8sFs struct {
 
 func NewK8sFs() *K8sFs {
 	nsDir := NewNamespacesDir()
-	// TODO: begin testcode
-	go func() {
-		wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-
-		ch := wi.ResultChan()
-
-		for {
-			ev, ok := <-ch
-			if !ok {
-				return
-			}
-
-			switch ev.Type {
-			case watch.Added:
-				log.Println("Added")
-				nsDir.AddNamespace(&ev.Object)
-			case watch.Modified:
-				// Update
-				nsDir.UpdateNamespace(&ev.Object)
-			case watch.Deleted:
-				// Delete
-				nsDir.DeleteNamespace(&ev.Object)
-			}
-		}
-	}()
-	// TODO: finish testcode
 	return &K8sFs{
 		FileSystem: pathfs.NewDefaultFileSystem(),
 		root:       nsDir,
@@ -108,16 +73,18 @@ func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Co
 	return me.root.GetDir(parentName).Create(names[len(names)-1], flags, mode)
 }
 
+var Fs *K8sFs
+var nfs *pathfs.PathNodeFs
+
+func init() {
+	Fs = NewK8sFs()
+	nfs = pathfs.NewPathNodeFs(Fs, nil)
+}
+
 func Serve(mountPoint string) {
-	k8sfs := NewK8sFs()
-	nfs := pathfs.NewPathNodeFs(k8sfs, nil)
 	server, _, err := nodefs.MountRoot(mountPoint, nfs.Root(), nil)
 	if err != nil {
 		log.Fatalf("Mount fail: %v\n", err)
 	}
 	server.Serve()
-}
-
-func TestMain() {
-	Serve(flag.Arg(0))
 }
