@@ -71,8 +71,8 @@ func (me *nsWatcher) StopAll() {
 func (me *nsWatcher) watchPods() {
 	log.Printf("start watchPods/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/po")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("po")
 	poDir := dir.(*podsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Pods(me.Namespace).Watch(metav1.ListOptions{})
@@ -113,8 +113,8 @@ func (me *nsWatcher) watchPods() {
 func (me *nsWatcher) watchServices() {
 	log.Printf("start watchServices/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/svc")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("svc")
 	svcDir := dir.(*servicesDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Services(me.Namespace).Watch(metav1.ListOptions{})
@@ -155,8 +155,8 @@ func (me *nsWatcher) watchServices() {
 func (me *nsWatcher) watchConfigMaps() {
 	log.Printf("start watchConfigMaps/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/cm")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("cm")
 	cmDir := dir.(*configMapsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().ConfigMaps(me.Namespace).Watch(metav1.ListOptions{})
@@ -197,8 +197,8 @@ func (me *nsWatcher) watchConfigMaps() {
 func (me *nsWatcher) watchDeployments() {
 	log.Printf("start watchDeployments/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/deploy")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("deploy")
 	deployDir := dir.(*deploymentsDir)
 	for {
 		wi, err := k8s.Clientset.ExtensionsV1beta1().Deployments(me.Namespace).Watch(metav1.ListOptions{})
@@ -240,8 +240,8 @@ func (me *nsWatcher) watchDeployments() {
 func (me *nsWatcher) watchEndpoints() {
 	log.Printf("start watchEndpoints/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/ep")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("ep")
 	epDir := dir.(*endpointsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Endpoints(me.Namespace).Watch(metav1.ListOptions{})
@@ -282,8 +282,8 @@ func (me *nsWatcher) watchEndpoints() {
 func (me *nsWatcher) watchEvents() {
 	log.Printf("start watchEvents/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/ev")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("ev")
 	evDir := dir.(*eventsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Events(me.Namespace).Watch(metav1.ListOptions{})
@@ -324,8 +324,8 @@ func (me *nsWatcher) watchEvents() {
 func (me *nsWatcher) watchIngresses() {
 	log.Printf("start watchIngresses/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/ing")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("ing")
 	ingDir := dir.(*ingresssDir)
 	for {
 		wi, err := k8s.Clientset.ExtensionsV1beta1().Ingresses(me.Namespace).Watch(metav1.ListOptions{})
@@ -366,8 +366,8 @@ func (me *nsWatcher) watchIngresses() {
 func (me *nsWatcher) watchPersistentVolumeClaims() {
 	log.Printf("start watchPersistentVolumeClaims/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/pvc")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("pvc")
 	pvcDir := dir.(*persistentVolumeClaimsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().PersistentVolumeClaims(me.Namespace).Watch(metav1.ListOptions{})
@@ -408,8 +408,8 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 func (me *nsWatcher) watchReplicationControllers() {
 	log.Printf("start watchReplicationControllers/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/rc")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("rc")
 	rcDir := dir.(*replicationControllersDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().ReplicationControllers(me.Namespace).Watch(metav1.ListOptions{})
@@ -450,8 +450,8 @@ func (me *nsWatcher) watchReplicationControllers() {
 func (me *nsWatcher) watchServiceAccounts() {
 	log.Printf("start watchServiceAccounts/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/sa")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("sa")
 	saDir := dir.(*serviceAccountsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().ServiceAccounts(me.Namespace).Watch(metav1.ListOptions{})
@@ -492,8 +492,8 @@ func (me *nsWatcher) watchServiceAccounts() {
 func (me *nsWatcher) watchSecrets() {
 	log.Printf("start watchSecrets/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/secrets")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("secrets")
 	secretsDir := dir.(*secretsDir)
 	for {
 		wi, err := k8s.Clientset.CoreV1().Secrets(me.Namespace).Watch(metav1.ListOptions{})
@@ -534,8 +534,8 @@ func (me *nsWatcher) watchSecrets() {
 func (me *nsWatcher) watchDaemonSets() {
 	log.Printf("start watchDaemonSets/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/ds")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("ds")
 	dsDir := dir.(*daemonSetsDir)
 	for {
 		wi, err := k8s.Clientset.ExtensionsV1beta1().DaemonSets(me.Namespace).Watch(metav1.ListOptions{})
@@ -577,8 +577,8 @@ func (me *nsWatcher) watchDaemonSets() {
 func (me *nsWatcher) watchReplicaSets() {
 	log.Printf("start watchReplicaSets/%s", me.Namespace)
 
-	nsDir := Fs.root.(*namespacesDir)
-	dir := nsDir.GetDir(me.Namespace + "/rs")
+	nsDir := GetNamespaceDir(me.Namespace)
+	dir := nsDir.GetDir("rs")
 	rsDir := dir.(*replicaSetsDir)
 	for {
 		wi, err := k8s.Clientset.ExtensionsV1beta1().ReplicaSets(me.Namespace).Watch(metav1.ListOptions{})

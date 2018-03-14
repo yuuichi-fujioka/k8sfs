@@ -74,3 +74,7 @@ func SetAttrTimeCluster(out *fuse.Attr) {
 	out.Mtime = ctime
 	out.Atime = ctime
 }
+
+func GetNamespaceDir(namespace string) DirEntry {
+	return Fs.root.GetDir(namespace)
+}
