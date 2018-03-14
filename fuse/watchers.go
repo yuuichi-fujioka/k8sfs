@@ -30,6 +30,7 @@ func NewNsWatcher(namespace string) *nsWatcher {
 			"secrets": make(chan bool),
 			"svc":     make(chan bool),
 			"ds":      make(chan bool),
+			"rs":      make(chan bool),
 		},
 	}
 }
@@ -48,6 +49,7 @@ func (me *nsWatcher) StartAll() {
 	go me.watchServiceAccounts()
 	go me.watchSecrets()
 	go me.watchDaemonSets()
+	go me.watchReplicaSets()
 }
 
 func (me *nsWatcher) StopAll() {
@@ -63,6 +65,7 @@ func (me *nsWatcher) StopAll() {
 	me.closeChannels["secrets"] <- true
 	me.closeChannels["svc"] <- true
 	me.closeChannels["ds"] <- true
+	me.closeChannels["rs"] <- true
 }
 
 func (me *nsWatcher) watchPods() {
@@ -564,6 +567,49 @@ func (me *nsWatcher) watchDaemonSets() {
 				case watch.Deleted:
 					// Delete
 					dsDir.DeleteDaemonSet(ev.Object)
+				}
+			}
+		}
+	}
+
+}
+
+func (me *nsWatcher) watchReplicaSets() {
+	log.Printf("start watchReplicaSets/%s", me.Namespace)
+
+	nsDir := Fs.root.(*namespacesDir)
+	dir := nsDir.GetDir(me.Namespace + "/rs")
+	rsDir := dir.(*replicaSetsDir)
+	for {
+		wi, err := k8s.Clientset.ExtensionsV1beta1().ReplicaSets(me.Namespace).Watch(metav1.ListOptions{})
+		if err != nil {
+			panic(err.Error())
+		}
+
+		ch := wi.ResultChan()
+
+	loop:
+		for {
+			select {
+			case <-me.closeChannels["rs"]:
+				log.Printf("finish watchReplicaSets/%s", me.Namespace)
+				return
+			case ev, ok := <-ch:
+				if !ok {
+					break loop
+				}
+
+				switch ev.Type {
+				case watch.Added:
+					log.Println("rs/Added")
+					rsDir.AddReplicaSet(ev.Object)
+
+				case watch.Modified:
+					// Update
+					rsDir.UpdateReplicaSet(ev.Object)
+				case watch.Deleted:
+					// Delete
+					rsDir.DeleteReplicaSet(ev.Object)
 				}
 			}
 		}

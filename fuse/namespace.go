@@ -55,6 +55,8 @@ func NewNamespaceDir(obj runtime.Object) (string, *namespaceDir) {
 	d.dirs[name] = servicesDir
 	name, daemonSetsDir := NewDaemonSetsDir(ns.Name)
 	d.dirs[name] = daemonSetsDir
+	name, replicaSetsDir := NewReplicaSetsDir(ns.Name)
+	d.dirs[name] = replicaSetsDir
 	return d.Name, d
 }
 

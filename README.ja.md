@@ -54,6 +54,7 @@ drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 ing
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 po
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 pvc
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 rc
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 rs
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 sa
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 secrets
 drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 svc
