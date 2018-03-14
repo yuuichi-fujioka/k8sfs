@@ -17,17 +17,13 @@ type deploymentsDir struct {
 	Namespace string
 }
 
-func NewDeploymentsDir(ns string) *deploymentsDir {
+func NewDeploymentsDir(ns string) (string, *deploymentsDir) {
 
-	return &deploymentsDir{
+	return "deploy", &deploymentsDir{
 		File:       nodefs.NewDefaultFile(),
 		defaultDir: NewDefaultDir(),
 		Namespace:  ns,
 	}
-}
-
-func (f *deploymentsDir) GetName() string {
-	return "deploy"
 }
 
 func (f *deploymentsDir) GetAttr(out *fuse.Attr) fuse.Status {
@@ -48,8 +44,8 @@ func (f *deploymentsDir) GetDir(name string) DirEntry {
 
 	names := strings.Split(name, "/")
 
-	for _, child := range f.dirs {
-		if child.GetName() == names[0] {
+	for k, child := range f.dirs {
+		if k == names[0] {
 			return child.GetDir(strings.Join(names[1:], "/"))
 		}
 	}
@@ -58,32 +54,33 @@ func (f *deploymentsDir) GetDir(name string) DirEntry {
 }
 
 func (f *deploymentsDir) Unlink(name string) (code fuse.Status) {
-	log.Printf("Unlink: %s at %s", name, f.GetName())
+	log.Printf("Unlink: %s at %s", name, "deploy")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *deploymentsDir) Mkdir(name string, mode uint32) fuse.Status {
-	log.Printf("Mkdir: %s at %s", name, f.GetName())
+	log.Printf("Mkdir: %s at %s", name, "deploy")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *deploymentsDir) Rmdir() (code fuse.Status) {
-	log.Printf("Rmdir: %s", f.GetName())
+	log.Printf("Rmdir: %s", "deploy")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *deploymentsDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
-	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.GetName(), flags, mode)
+	log.Printf("Create: %s on %s with 0x%x 0x%x", name, "deploy", flags, mode)
 	// TODO
 	return nil, fuse.ENOSYS
 }
 
 func (f *deploymentsDir) AddDeployment(obj runtime.Object) {
 	if !f.UpdateDeployment(obj) {
-		f.files = append(f.files, NewDeploymentFile(obj))
+		newFile := NewDeploymentFile(obj)
+		f.files[newFile.Name] = newFile
 	}
 }
 
@@ -115,21 +112,7 @@ func (f *deploymentsDir) DeleteDeployment(obj runtime.Object) {
 	}
 	name := deploy.Name
 
-	newlist := f.dirs
-	for i, dir := range f.dirs {
-		if dir.GetName() == name {
-			newlist = append(f.dirs[:i], f.dirs[i+1:]...)
-			break
-		}
-	}
-	f.dirs = newlist
+	delete(f.dirs, name)
+	delete(f.files, name+".yaml")
 
-	newlist2 := f.files
-	for i, file := range f.files {
-		if file.Name == name+".yaml" {
-			newlist2 = append(f.files[:i], f.files[i+1:]...)
-			break
-		}
-	}
-	f.files = newlist2
 }

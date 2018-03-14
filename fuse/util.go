@@ -48,14 +48,14 @@ func GetFile(d DirEntry, name string) nodefs.File {
 	}
 
 	names := strings.Split(name, "/")
-	for _, child := range d.GetChildDirs() {
-		if child.GetName() == names[0] {
+	for k, child := range d.GetChildDirs() {
+		if k == names[0] {
 			return GetFile(child, strings.Join(names[1:], "/"))
 		}
 	}
-	for _, child := range d.GetChildFiles() {
-		if child.GetName() == names[0] {
-			return child.GetFile()
+	for k, child := range d.GetChildFiles() {
+		if k == names[0] {
+			return child
 		}
 	}
 	return nil

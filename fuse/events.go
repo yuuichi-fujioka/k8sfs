@@ -17,17 +17,13 @@ type eventsDir struct {
 	Namespace string
 }
 
-func NewEventsDir(ns string) *eventsDir {
+func NewEventsDir(ns string) (string, *eventsDir) {
 
-	return &eventsDir{
+	return "ev", &eventsDir{
 		File:       nodefs.NewDefaultFile(),
 		defaultDir: NewDefaultDir(),
 		Namespace:  ns,
 	}
-}
-
-func (f *eventsDir) GetName() string {
-	return "ev"
 }
 
 func (f *eventsDir) GetAttr(out *fuse.Attr) fuse.Status {
@@ -48,8 +44,8 @@ func (f *eventsDir) GetDir(name string) DirEntry {
 
 	names := strings.Split(name, "/")
 
-	for _, child := range f.dirs {
-		if child.GetName() == names[0] {
+	for k, child := range f.dirs {
+		if k == names[0] {
 			return child.GetDir(strings.Join(names[1:], "/"))
 		}
 	}
@@ -58,32 +54,33 @@ func (f *eventsDir) GetDir(name string) DirEntry {
 }
 
 func (f *eventsDir) Unlink(name string) (code fuse.Status) {
-	log.Printf("Unlink: %s at %s", name, f.GetName())
+	log.Printf("Unlink: %s at %s", name, "ev")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *eventsDir) Mkdir(name string, mode uint32) fuse.Status {
-	log.Printf("Mkdir: %s at %s", name, f.GetName())
+	log.Printf("Mkdir: %s at %s", name, "ev")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *eventsDir) Rmdir() (code fuse.Status) {
-	log.Printf("Rmdir: %s", f.GetName())
+	log.Printf("Rmdir: %s", "ev")
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *eventsDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
-	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.GetName(), flags, mode)
+	log.Printf("Create: %s on %s with 0x%x 0x%x", name, "ev", flags, mode)
 	// TODO
 	return nil, fuse.ENOSYS
 }
 
 func (f *eventsDir) AddEvent(obj runtime.Object) {
 	if !f.UpdateEvent(obj) {
-		f.files = append(f.files, NewEventFile(obj))
+		newFile := NewEventFile(obj)
+		f.files[newFile.Name] = newFile
 	}
 }
 
@@ -115,21 +112,6 @@ func (f *eventsDir) DeleteEvent(obj runtime.Object) {
 	}
 	name := ev.Name
 
-	newlist := f.dirs
-	for i, dir := range f.dirs {
-		if dir.GetName() == name {
-			newlist = append(f.dirs[:i], f.dirs[i+1:]...)
-			break
-		}
-	}
-	f.dirs = newlist
-
-	newlist2 := f.files
-	for i, file := range f.files {
-		if file.Name == name+".yaml" {
-			newlist2 = append(f.files[:i], f.files[i+1:]...)
-			break
-		}
-	}
-	f.files = newlist2
+	delete(f.dirs, name)
+	delete(f.files, name+".yaml")
 }

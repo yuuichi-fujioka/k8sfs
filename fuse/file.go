@@ -59,10 +59,6 @@ func NewWFile(name string, handler WFReleaseHandler) *writableFile {
 	return f
 }
 
-func (f *writableFile) GetName() string {
-	return f.Name
-}
-
 func (f *writableFile) GetFile() nodefs.File {
 	return f
 }

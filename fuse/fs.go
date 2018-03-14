@@ -15,7 +15,7 @@ type K8sFs struct {
 }
 
 func NewK8sFs() *K8sFs {
-	nsDir := NewNamespacesDir()
+	_, nsDir := NewNamespacesDir()
 	return &K8sFs{
 		FileSystem: pathfs.NewDefaultFileSystem(),
 		root:       nsDir,

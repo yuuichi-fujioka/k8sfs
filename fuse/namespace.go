@@ -18,7 +18,7 @@ type namespaceDir struct {
 	metaObj
 }
 
-func NewNamespaceDir(obj runtime.Object) *namespaceDir {
+func NewNamespaceDir(obj runtime.Object) (string, *namespaceDir) {
 	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
@@ -31,23 +31,31 @@ func NewNamespaceDir(obj runtime.Object) *namespaceDir {
 		defaultDir: NewDefaultDir(),
 		metaObj:    *meta,
 	}
-	d.dirs = append(d.dirs, NewConfigMapsDir(ns.Name))
-	d.dirs = append(d.dirs, NewDeploymentsDir(ns.Name))
-	d.dirs = append(d.dirs, NewEndpointsDir(ns.Name))
-	d.dirs = append(d.dirs, NewEventsDir(ns.Name))
-	d.dirs = append(d.dirs, NewIngressesDir(ns.Name))
-	d.dirs = append(d.dirs, NewPersistentVolumeClaimsDir(ns.Name))
-	d.dirs = append(d.dirs, NewPodsDir(ns.Name))
-	d.dirs = append(d.dirs, NewReplicationControllersDir(ns.Name))
-	d.dirs = append(d.dirs, NewSecretsDir(ns.Name))
-	d.dirs = append(d.dirs, NewServiceAccountsDir(ns.Name))
-	d.dirs = append(d.dirs, NewServicesDir(ns.Name))
-	d.dirs = append(d.dirs, NewDaemonSetsDir(ns.Name))
-	return d
-}
-
-func (f *namespaceDir) GetName() string {
-	return f.Name
+	name, configMapsDir := NewConfigMapsDir(ns.Name)
+	d.dirs[name] = configMapsDir
+	name, deploymentsDir := NewDeploymentsDir(ns.Name)
+	d.dirs[name] = deploymentsDir
+	name, endpointsDir := NewEndpointsDir(ns.Name)
+	d.dirs[name] = endpointsDir
+	name, eventsDir := NewEventsDir(ns.Name)
+	d.dirs[name] = eventsDir
+	name, ingressesDir := NewIngressesDir(ns.Name)
+	d.dirs[name] = ingressesDir
+	name, persistentVolumeClaimsDir := NewPersistentVolumeClaimsDir(ns.Name)
+	d.dirs[name] = persistentVolumeClaimsDir
+	name, podsDir := NewPodsDir(ns.Name)
+	d.dirs[name] = podsDir
+	name, replicationControllersDir := NewReplicationControllersDir(ns.Name)
+	d.dirs[name] = replicationControllersDir
+	name, secretsDir := NewSecretsDir(ns.Name)
+	d.dirs[name] = secretsDir
+	name, serviceAccountsDir := NewServiceAccountsDir(ns.Name)
+	d.dirs[name] = serviceAccountsDir
+	name, servicesDir := NewServicesDir(ns.Name)
+	d.dirs[name] = servicesDir
+	name, daemonSetsDir := NewDaemonSetsDir(ns.Name)
+	d.dirs[name] = daemonSetsDir
+	return d.Name, d
 }
 
 func (f *namespaceDir) GetAttr(out *fuse.Attr) fuse.Status {
@@ -68,8 +76,8 @@ func (f *namespaceDir) GetDir(name string) DirEntry {
 
 	names := strings.Split(name, "/")
 
-	for _, child := range f.dirs {
-		if child.GetName() == names[0] {
+	for k, child := range f.dirs {
+		if k == names[0] {
 			return child.GetDir(strings.Join(names[1:], "/"))
 		}
 	}
@@ -78,25 +86,25 @@ func (f *namespaceDir) GetDir(name string) DirEntry {
 }
 
 func (f *namespaceDir) Unlink(name string) (code fuse.Status) {
-	log.Printf("Unlink: %s at %s", name, f.GetName())
+	log.Printf("Unlink: %s at %s", name, f.Name)
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *namespaceDir) Mkdir(name string, mode uint32) fuse.Status {
-	log.Printf("Mkdir: %s at %s", name, f.GetName())
+	log.Printf("Mkdir: %s at %s", name, f.Name)
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *namespaceDir) Rmdir() (code fuse.Status) {
-	log.Printf("Rmdir: %s", f.GetName())
+	log.Printf("Rmdir: %s", f.Name)
 	// TODO
 	return fuse.ENOSYS
 }
 
 func (f *namespaceDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
-	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.GetName(), flags, mode)
+	log.Printf("Create: %s on %s with 0x%x 0x%x", name, f.Name, flags, mode)
 	// TODO
 	return nil, fuse.ENOSYS
 }
