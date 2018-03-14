@@ -11,7 +11,7 @@ NOTE: The feature is not tested yet.
 * Mount
 
 ```
-$ go get -u github.com/yuuichi-fujioka/k8sfs
+$ go get -u github.com/yuuichi-ubuntu /k8sfs
 $ k8sfs -kubeconfig ~/.kube/config /mnt/k8s
 ```
 
@@ -42,19 +42,20 @@ status:
   phase: Active
 $ ls -la /mnt/k8s/default/ # Can see directories for each resource
 total 0
-drwxr-xr-x 1 ubuntu  ubuntu  234  2月  8 08:53 .
-drwxr-xr-x 1 ubuntu  ubuntu    0  1月  1  1970 ..
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 cm
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 deploy
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ep
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ev
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 ing
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 po
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 pvc
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 rc
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 sa
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 secrets
-drwxr-xr-x 0 ubuntu  ubuntu    0  2月  8 08:53 svc
+drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:53 .
+drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:52 ..
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 cm
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 deploy
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 ds
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 ep
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 ev
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 ing
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 po
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 pvc
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 rc
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 sa
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 secrets
+drwxr-xr-x 0 ubuntu  ubuntu  4096  2月  8 08:52 svc
 $ ls -la /mnt/k8s/default/po # pod list
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu     0  2月  8 08:53 .

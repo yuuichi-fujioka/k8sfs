@@ -42,6 +42,7 @@ func NewNamespaceDir(obj runtime.Object) *namespaceDir {
 	d.dirs = append(d.dirs, NewSecretsDir(ns.Name))
 	d.dirs = append(d.dirs, NewServiceAccountsDir(ns.Name))
 	d.dirs = append(d.dirs, NewServicesDir(ns.Name))
+	d.dirs = append(d.dirs, NewDaemonSetsDir(ns.Name))
 	return d
 }
 
