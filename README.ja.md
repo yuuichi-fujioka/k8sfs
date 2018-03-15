@@ -170,9 +170,10 @@ $ mkdir /mnt/k8s/asdf  # Namespaceの作成
 
 ```
 $ rm /mnt/k8s/asdf.yaml  # Namespaceの削除
+$ rm /mnt/k8s/default/deploy/nginx.yaml # Deploymentの削除
 ```
 
-※ Namespace限定
+※ Namespace、Deployment限定
 ※ ディレクトリ指定での削除は実装しない。
 
 * 掃除する

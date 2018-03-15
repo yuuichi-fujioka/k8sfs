@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/yuuichi-fujioka/k8sfs/k8s"
+
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
@@ -56,7 +58,12 @@ func (f *deploymentsDir) GetDir(name string) DirEntry {
 func (f *deploymentsDir) Unlink(name string) (code fuse.Status) {
 	log.Printf("Unlink: %s at %s", name, "deploy")
 	// TODO
-	return fuse.ENOSYS
+	deployName := strings.TrimSuffix(name, ".yaml")
+	err := k8s.DeleteDeployment(f.Namespace, deployName)
+	if err != nil {
+		return fuse.EIO
+	}
+	return fuse.OK
 }
 
 func (f *deploymentsDir) Mkdir(name string, mode uint32) fuse.Status {

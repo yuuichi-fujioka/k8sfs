@@ -156,6 +156,22 @@ status:
   startTime: 2018-02-17T01:16:08Z
 ```
 
+* Create
+
+```
+$ mkdir /mnt/k8s/asdf  # Create a Namespace
+```
+
+Namespace is only implemented.
+
+* Delete
+
+```
+$ rm /mnt/k8s/asdf.yaml  # Delete a Nmespace
+$ rm /mnt/k8s/default/deploy/nginx.yaml # Deletea a Deployment
+```
+
+Namespace and Deployment are only implemented.
 
 * Cleanup
 
