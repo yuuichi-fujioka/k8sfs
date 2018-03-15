@@ -76,5 +76,9 @@ func SetAttrTimeCluster(out *fuse.Attr) {
 }
 
 func GetNamespaceDir(namespace string) DirEntry {
-	return Fs.root.GetDir(namespace)
+	if topLevelNamespace == "" {
+		return Fs.root.GetDir(namespace)
+	} else {
+		return Fs.root
+	}
 }

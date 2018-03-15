@@ -7,6 +7,9 @@ import (
 	"github.com/hanwen/go-fuse/fuse"
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 	"github.com/hanwen/go-fuse/fuse/pathfs"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type K8sFs struct {
@@ -15,10 +18,21 @@ type K8sFs struct {
 }
 
 func NewK8sFs() *K8sFs {
-	_, nsDir := NewNamespacesDir()
+	var root DirEntry
+	if topLevelNamespace == "" {
+		_, root = NewNamespacesDir()
+	} else {
+		ns := &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: topLevelNamespace,
+			},
+		}
+		_, root = NewNamespaceDir(ns)
+	}
+
 	return &K8sFs{
 		FileSystem: pathfs.NewDefaultFileSystem(),
-		root:       nsDir,
+		root:       root,
 	}
 }
 
@@ -75,13 +89,12 @@ func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Co
 
 var Fs *K8sFs
 var nfs *pathfs.PathNodeFs
-
-func init() {
-	Fs = NewK8sFs()
-	nfs = pathfs.NewPathNodeFs(Fs, nil)
-}
+var topLevelNamespace string
 
 func Serve(mountPoint string) {
+	Fs = NewK8sFs()
+	nfs = pathfs.NewPathNodeFs(Fs, nil)
+
 	server, _, err := nodefs.MountRoot(mountPoint, nfs.Root(), nil)
 	if err != nil {
 		log.Fatalf("Mount fail: %v\n", err)

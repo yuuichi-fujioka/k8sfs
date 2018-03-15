@@ -16,6 +16,15 @@ go get -u github.com/yuuichi-ubuntu /k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s  # パスはなんでもいい。
 ```
 
+* namespaceを指定していてマウントする
+
+```
+go get -u github.com/yuuichi-ubuntu /k8sfs
+k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # default namespaceだけマウントする
+```
+
+※ namespaceが無くてもエラーにはなりません。
+
 * 見る
 
 ```
@@ -41,7 +50,7 @@ spec:
   - kubernetes
 status:
   phase: Active
-$ ls -la /mnt/k8s/default/ # リソースごとのフォルダが見える
+$ ls -la /mnt/k8s/default/ # リソースごとのフォルダが見える。namespaceを指定してマウントすると、ここがマウントポイントになる。
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:53 .
 drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:52 ..

@@ -20,6 +20,8 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 
+	namespace := flag.String("namespace", "", "top level namespace. if this is blank, all namespaces will be mount")
+
 	flag.Parse()
 
 	if len(flag.Args()) < 1 {
@@ -28,7 +30,7 @@ func main() {
 	log.Printf("argments: %v\n", flag.Args())
 
 	k8s.Init(*kubeconfig)
-	fuse.TestMain(flag.Arg(0))
+	fuse.TestMain(flag.Arg(0), *namespace)
 }
 
 func homeDir() string {

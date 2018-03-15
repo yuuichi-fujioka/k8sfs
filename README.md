@@ -15,6 +15,15 @@ $ go get -u github.com/yuuichi-ubuntu /k8sfs
 $ k8sfs -kubeconfig ~/.kube/config /mnt/k8s
 ```
 
+* Mount with namespace
+
+```
+go get -u github.com/yuuichi-ubuntu /k8sfs
+k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # mount only ns/default
+```
+
+Error doesn't report even if namespace is not exit.
+
 * Check
 
 ```
@@ -40,7 +49,7 @@ spec:
   - kubernetes
 status:
   phase: Active
-$ ls -la /mnt/k8s/default/ # Can see directories for each resource
+$ ls -la /mnt/k8s/default/ # Can see directories for each resource. when namespace is specified, this directory is mount point.
 total 0
 drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:53 .
 drwxr-xr-x 1 ubuntu  ubuntu  4096  2月  8 08:52 ..

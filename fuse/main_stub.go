@@ -10,9 +10,20 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-func TestMain(mountpoint string) {
-	go watchAllNs()
+func TestMain(mountpoint, namespace string) {
+	topLevelNamespace = namespace
+	if topLevelNamespace == "" {
+		go watchAllNs()
+	} else {
+		go watchNs()
+	}
+
 	Serve(mountpoint)
+}
+
+func watchNs() {
+	nsw := NewNsWatcher(topLevelNamespace)
+	nsw.StartAll()
 }
 
 func watchAllNs() {
