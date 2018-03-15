@@ -2,7 +2,64 @@
 
 Manage k8s via filesystem
 
-NOTE: At this time, it is just possible to see namespace, pod, services, deployments, ingres and etc yet.
+Feature Map:
+
+:heavy_check_mark:: Implemented
+Blank: Not Implemented
+:heavy_minus_sign:: Be Never Implemented
+
+| Resource                        | Read               | Create             | Update             | Delete             |
+|:--------------------------------|:-------------------|:-------------------|:-------------------|:-------------------|
+| Container                       |                    | :heavy_minus_sign: | :heavy_minus_sign: | :heavy_minus_sign: |
+| CronJob                         |                    |                    |                    |                    |
+| DaemonSet                       | :heavy_check_mark: |                    |                    |                    |
+| Deployment                      | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
+| Job                             |                    |                    |                    |                    |
+| Pod                             | :heavy_check_mark: |                    |                    |                    |
+| ReplicaSet                      | :heavy_check_mark: |                    |                    |                    |
+| ReplicationController           | :heavy_check_mark: |                    |                    |                    |
+| StatefulSet                     |                    |                    |                    |                    |
+| Endpoints                       | :heavy_check_mark: |                    |                    |                    |
+| Ingress                         | :heavy_check_mark: |                    |                    |                    |
+| Service                         | :heavy_check_mark: |                    |                    |                    |
+| ConfigMap                       | :heavy_check_mark: |                    |                    |                    |
+| Secret                          | :heavy_check_mark: |                    |                    |                    |
+| PersistentVolumeClaim           | :heavy_check_mark: |                    |                    |                    |
+| StorageClass                    |                    |                    |                    |                    |
+| Volume                          |                    |                    |                    |                    |
+| VolumeAttachment                |                    |                    |                    |                    |
+| ControllerRevision              |                    |                    |                    |                    |
+| CustomResourceDefinition        |                    |                    |                    |                    |
+| Event                           | :heavy_check_mark: |                    |                    |                    |
+| LimitRange                      |                    |                    |                    |                    |
+| HorizontalPodAutoscaler         |                    |                    |                    |                    |
+| InitializerConfiguration        |                    |                    |                    |                    |
+| MutatingWebhookConfiguration    |                    |                    |                    |                    |
+| ValidatingWebhookConfiguration  |                    |                    |                    |                    |
+| PodTemplate                     |                    |                    |                    |                    |
+| PodDisruptionBudget             |                    |                    |                    |                    |
+| PriorityClass                   |                    |                    |                    |                    |
+| PodPreset                       |                    |                    |                    |                    |
+| PodSecurityPolicy               |                    |                    |                    |                    |
+| APIService                      |                    |                    |                    |                    |
+| Binding                         |                    |                    |                    |                    |
+| CertificateSigningRequest       |                    |                    |                    |                    |
+| ClusterRole                     |                    |                    |                    |                    |
+| ClusterRoleBinding              |                    |                    |                    |                    |
+| ComponentStatus                 |                    |                    |                    |                    |
+| LocalSubjectAccessReview        |                    |                    |                    |                    |
+| Namespace                       | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
+| Node                            |                    |                    |                    |                    |
+| PersistentVolume                |                    |                    |                    |                    |
+| ResourceQuota                   |                    |                    |                    |                    |
+| Role                            |                    |                    |                    |                    |
+| RoleBinding                     |                    |                    |                    |                    |
+| SelfSubjectAccessReview         |                    |                    |                    |                    |
+| SelfSubjectRulesReview          |                    |                    |                    |                    |
+| ServiceAccount                  | :heavy_check_mark: |                    |                    |                    |
+| SubjectAccessReview             |                    |                    |                    |                    |
+| TokenReview                     |                    |                    |                    |                    |
+| NetworkPolicy                   |                    |                    |                    |                    |
 
 ## Usage
 
