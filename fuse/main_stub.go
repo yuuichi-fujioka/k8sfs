@@ -1,7 +1,6 @@
 package fuse
 
 import (
-	"flag"
 	"log"
 
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
@@ -11,9 +10,9 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-func TestMain() {
+func TestMain(mountpoint string) {
 	go watchAllNs()
-	Serve(flag.Arg(0))
+	Serve(mountpoint)
 }
 
 func watchAllNs() {

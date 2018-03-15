@@ -1,9 +1,6 @@
 package k8s
 
 import (
-	"flag"
-	"log"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -13,13 +10,15 @@ var ClusterCreatedAt uint64
 
 func InitFromArg() {
 	Clientset = GenClientSetFromFlags()
+	initClusterCreateAt()
+}
 
-	flag.Parse()
+func Init(kubeconfig string) {
+	Clientset = GenClientSet(kubeconfig)
+	initClusterCreateAt()
+}
 
-	if len(flag.Args()) < 1 {
-		log.Fatal("Usage:\n  k8sfs MOUNTPOINT")
-	}
-	log.Printf("argments: %v\n", flag.Args())
+func initClusterCreateAt() {
 
 	ns, err := Clientset.CoreV1().Namespaces().Get("kube-system", metav1.GetOptions{})
 	if err != nil {
