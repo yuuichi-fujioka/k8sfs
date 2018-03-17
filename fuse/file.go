@@ -24,6 +24,7 @@ func NewObjFile(obj runtime.Object, meta *metaObj, handler WFReleaseHandler) *wr
 		ctime:   uint64(meta.GetCreationTimestamp().Unix()),
 		handler: handler,
 		size:    len(yaml),
+		changed: false,
 	}
 	return f
 }
@@ -48,6 +49,7 @@ type writableFile struct {
 	ctime   uint64
 	handler WFReleaseHandler
 	size    int
+	changed bool
 }
 
 func NewWFile(name string, handler WFReleaseHandler) *writableFile {
@@ -58,6 +60,7 @@ func NewWFile(name string, handler WFReleaseHandler) *writableFile {
 		ctime:   uint64(time.Now().Unix()),
 		handler: handler,
 		size:    0,
+		changed: false,
 	}
 	return f
 }
@@ -83,6 +86,7 @@ func (f *writableFile) Write(data []byte, off int64) (uint32, fuse.Status) {
 	}
 	copy(f.data[off:], data)
 	f.size = int(end)
+	f.changed = true
 	return uint32(len(data)), fuse.OK
 }
 
