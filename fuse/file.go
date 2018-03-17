@@ -23,6 +23,7 @@ func NewObjFile(obj runtime.Object, meta *metaObj, handler WFReleaseHandler) *wr
 		data:    yaml,
 		ctime:   uint64(meta.GetCreationTimestamp().Unix()),
 		handler: handler,
+		size:    len(yaml),
 	}
 	return f
 }
@@ -46,6 +47,7 @@ type writableFile struct {
 	data    []byte
 	ctime   uint64
 	handler WFReleaseHandler
+	size    int
 }
 
 func NewWFile(name string, handler WFReleaseHandler) *writableFile {
@@ -55,6 +57,7 @@ func NewWFile(name string, handler WFReleaseHandler) *writableFile {
 		data:    make([]byte, 0),
 		ctime:   uint64(time.Now().Unix()),
 		handler: handler,
+		size:    0,
 	}
 	return f
 }
@@ -64,7 +67,7 @@ func (f *writableFile) GetFile() nodefs.File {
 }
 
 func (f *writableFile) GetAttr(out *fuse.Attr) fuse.Status {
-	out.Size = uint64(len(f.data))
+	out.Size = uint64(f.size)
 	out.Ctime = f.ctime
 	out.Mtime = f.ctime
 	out.Atime = f.ctime
@@ -79,14 +82,15 @@ func (f *writableFile) Write(data []byte, off int64) (uint32, fuse.Status) {
 		f.data = append(f.data, make([]byte, end-int64(len(f.data)))...)
 	}
 	copy(f.data[off:], data)
+	f.size = int(end)
 	return uint32(len(data)), fuse.OK
 }
 
 func (f *writableFile) Read(buf []byte, off int64) (res fuse.ReadResult, code fuse.Status) {
 	log.Printf("Read: %s %d\n", f.Name, off)
 	end := int(off) + int(len(buf))
-	if end > len(f.data) {
-		end = len(f.data)
+	if end > f.size {
+		end = f.size
 	}
 
 	return fuse.ReadResultData(f.data[off:end]), fuse.OK
@@ -97,6 +101,7 @@ func (f *writableFile) InnerFile() nodefs.File {
 }
 
 func (f *writableFile) Release() {
+	f.data = f.data[:f.size]
 	if strings.HasSuffix(f.Name, ".yaml") {
 		log.Printf("Relase: %s %s\n", f.Name, f.data)
 	} else {
