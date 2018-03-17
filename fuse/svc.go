@@ -12,7 +12,7 @@ func NewServiceFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&svc.TypeMeta, &svc.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateServiceFile(f *writableFile, obj runtime.Object) {

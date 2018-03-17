@@ -12,7 +12,7 @@ func NewEventFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&ev.TypeMeta, &ev.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateEventFile(f *writableFile, obj runtime.Object) {

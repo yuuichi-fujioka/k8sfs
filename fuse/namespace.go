@@ -128,7 +128,7 @@ func NewNamespaceFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateNamespaceFile(f *writableFile, obj runtime.Object) {

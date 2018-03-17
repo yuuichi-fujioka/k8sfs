@@ -12,7 +12,7 @@ func NewReplicaSetFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&rs.TypeMeta, &rs.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateReplicaSetFile(f *writableFile, obj runtime.Object) {

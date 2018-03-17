@@ -12,7 +12,7 @@ func NewEndpointsFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&ep.TypeMeta, &ep.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateEndpointsFile(f *writableFile, obj runtime.Object) {

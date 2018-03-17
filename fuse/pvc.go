@@ -12,7 +12,7 @@ func NewPersistentVolumeClaimFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&pvc.TypeMeta, &pvc.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdatePersistentVolumeClaimFile(f *writableFile, obj runtime.Object) {

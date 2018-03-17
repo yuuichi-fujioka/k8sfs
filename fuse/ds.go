@@ -12,7 +12,7 @@ func NewDaemonSetFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&ds.TypeMeta, &ds.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateDaemonSetFile(f *writableFile, obj runtime.Object) {

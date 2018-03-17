@@ -12,7 +12,7 @@ func NewReplicationControllerFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&rc.TypeMeta, &rc.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateReplicationControllerFile(f *writableFile, obj runtime.Object) {

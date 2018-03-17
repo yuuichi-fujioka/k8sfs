@@ -12,7 +12,7 @@ func NewDeploymentFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&dep.TypeMeta, &dep.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateDeploymentFile(f *writableFile, obj runtime.Object) {

@@ -12,7 +12,7 @@ func NewIngressFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&ing.TypeMeta, &ing.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateIngressFile(f *writableFile, obj runtime.Object) {

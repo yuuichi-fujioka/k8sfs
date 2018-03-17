@@ -94,7 +94,7 @@ func (f *namespacesDir) Rmdir() (code fuse.Status) {
 func (f *namespacesDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
 	log.Printf("Create: %s on %s with 0x%x 0x%x", name, "namespaces", flags, mode)
 	// TODO
-	return f.AddTmpFile(name), fuse.OK
+	return f.AddTmpFile(name, nil), fuse.OK
 }
 
 func (f *namespacesDir) AddNamespace(obj runtime.Object) {

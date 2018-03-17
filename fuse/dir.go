@@ -69,8 +69,8 @@ func (f *defaultDir) RemoveTmpFile(name string) fuse.Status {
 	return fuse.ENOENT
 }
 
-func (f *defaultDir) AddTmpFile(name string) nodefs.File {
-	tmp := NewWFile(name, nil)
+func (f *defaultDir) AddTmpFile(name string, handler WFReleaseHandler) nodefs.File {
+	tmp := NewWFile(name, handler)
 	f.tmpFiles[name] = tmp
 	return tmp
 }

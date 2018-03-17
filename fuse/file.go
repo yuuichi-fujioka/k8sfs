@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func NewObjFile(obj runtime.Object, meta *metaObj) *writableFile {
+func NewObjFile(obj runtime.Object, meta *metaObj, handler WFReleaseHandler) *writableFile {
 	yaml, err := GenYaml(obj)
 	if err != nil {
 		panic("!!!")
@@ -22,7 +22,7 @@ func NewObjFile(obj runtime.Object, meta *metaObj) *writableFile {
 		File:    nodefs.NewDefaultFile(),
 		data:    yaml,
 		ctime:   uint64(meta.GetCreationTimestamp().Unix()),
-		handler: nil,
+		handler: handler,
 	}
 	return f
 }

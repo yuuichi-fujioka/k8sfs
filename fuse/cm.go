@@ -12,7 +12,7 @@ func NewConfigMapFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&cm.TypeMeta, &cm.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdateConfigMapFile(f *writableFile, obj runtime.Object) {

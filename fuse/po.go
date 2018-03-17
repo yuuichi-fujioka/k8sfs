@@ -12,7 +12,7 @@ func NewPodFile(obj runtime.Object) *writableFile {
 	}
 
 	meta := NewMetaObj(&pod.TypeMeta, &pod.ObjectMeta)
-	return NewObjFile(obj, meta)
+	return NewObjFile(obj, meta, nil)
 }
 
 func UpdatePodFile(f *writableFile, obj runtime.Object) {
