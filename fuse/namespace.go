@@ -121,14 +121,14 @@ func (f *namespaceDir) Update(obj runtime.Object) {
 	f.metaObj = *meta
 }
 
-func NewNamespaceFile(obj runtime.Object) *writableFile {
+func NewNamespaceFile(obj runtime.Object, handler WFReleaseHandler) *writableFile {
 	ns, ok := obj.(*corev1.Namespace)
 	if !ok {
 		panic("!!!!")
 	}
 
 	meta := NewMetaObj(&ns.TypeMeta, &ns.ObjectMeta)
-	return NewObjFile(obj, meta, nil)
+	return NewObjFile(obj, meta, handler)
 }
 
 func UpdateNamespaceFile(f *writableFile, obj runtime.Object) {

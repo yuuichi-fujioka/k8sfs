@@ -48,7 +48,7 @@ Blank: Not Implemented
 | ClusterRoleBinding              |                    |                    |                    |                    |
 | ComponentStatus                 |                    |                    |                    |                    |
 | LocalSubjectAccessReview        |                    |                    |                    |                    |
-| Namespace                       | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
+| Namespace                       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Node                            |                    |                    |                    |                    |
 | PersistentVolume                |                    |                    |                    |                    |
 | ResourceQuota                   |                    |                    |                    |                    |
@@ -213,13 +213,26 @@ status:
   startTime: 2018-02-17T01:16:08Z
 ```
 
-* Create
+* Create/Updates
 
 ```
 $ mkdir /mnt/k8s/asdf  # Create a Namespace
 ```
 
-Namespace is only implemented.
+```
+$ cat << EOF > /mnt/k8s/hoge.yaml  # Create/Update a Namespace
+metadata:
+  labels:
+    app: hoge
+  name: hoge
+spec:
+  finalizers:
+  - kubernetes
+EOF
+```
+
+If metadata.name and file name is not same, error will be occurred.
+Direct editing with vi is not recommended because vi may delete a file.
 
 * Delete
 
@@ -227,8 +240,6 @@ Namespace is only implemented.
 $ rm /mnt/k8s/asdf.yaml  # Delete a Nmespace
 $ rm /mnt/k8s/default/deploy/nginx.yaml # Deletea a Deployment
 ```
-
-Namespace and Deployment are only implemented.
 
 * Cleanup
 

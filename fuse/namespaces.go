@@ -94,14 +94,14 @@ func (f *namespacesDir) Rmdir() (code fuse.Status) {
 func (f *namespacesDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
 	log.Printf("Create: %s on %s with 0x%x 0x%x", name, "namespaces", flags, mode)
 	// TODO
-	return f.AddTmpFile(name, nil), fuse.OK
+	return f.AddTmpFile(name, f), fuse.OK
 }
 
 func (f *namespacesDir) AddNamespace(obj runtime.Object) {
 	if !f.UpdateNamespace(obj) {
 		name, newDir := NewNamespaceDir(obj)
 		f.dirs[name] = newDir
-		newFile := NewNamespaceFile(obj)
+		newFile := NewNamespaceFile(obj, f)
 		f.files[newFile.Name] = newFile
 	}
 }
@@ -148,4 +148,30 @@ func (f *namespacesDir) DeleteNamespace(obj runtime.Object) {
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
 
+}
+
+func (f *namespacesDir) HandleRelease(wf *writableFile) {
+	log.Printf("Namespace/HandleRelease: %s", wf.Name)
+	if strings.HasPrefix(wf.Name, ".") {
+		// This is the Hidden File.
+		// TODO Delete this file
+		return
+	}
+	if !strings.HasSuffix(wf.Name, ".yaml") {
+		// This is the Hidden File.
+		// TODO Delete this file
+		return
+	}
+	if !wf.changed {
+		// Namespace is Not Changed
+		return
+	}
+
+	nsname := strings.TrimSuffix(wf.Name, ".yaml")
+	ns, err := k8s.CreateUpdateNamespaceWithYaml(nsname, wf.data)
+	if err != nil {
+		log.Printf("Creating/Updating Namespace is failed because %v. data: %s\n", err, wf.data)
+		return
+	}
+	log.Printf("Ns will be created/updated: %v\n", ns)
 }

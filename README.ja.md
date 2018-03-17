@@ -48,7 +48,7 @@
 | ClusterRoleBinding              |                    |                    |                    |                    |
 | ComponentStatus                 |                    |                    |                    |                    |
 | LocalSubjectAccessReview        |                    |                    |                    |                    |
-| Namespace                       | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
+| Namespace                       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Node                            |                    |                    |                    |                    |
 | PersistentVolume                |                    |                    |                    |                    |
 | ResourceQuota                   |                    |                    |                    |                    |
@@ -213,14 +213,26 @@ status:
   startTime: 2018-02-17T01:16:08Z
 ```
 
-* 作る
+* 作る&更新する
 
 ```
 $ mkdir /mnt/k8s/asdf  # Namespaceの作成
 ```
 
-※ Namespace限定
-※ yaml指定での作成は未実装
+```
+$ cat << EOF > /mnt/k8s/hoge.yaml  # Namespaceの作成/更新
+metadata:
+  labels:
+    app: hoge
+  name: hoge
+spec:
+  finalizers:
+  - kubernetes
+EOF
+```
+
+※ ファイル名とmtadata.nameが一致していないとエラーになる
+※ viでの直接編集は非推奨。vimによりファイルの削除が発生する事がある。
 
 * 消す
 
@@ -229,7 +241,6 @@ $ rm /mnt/k8s/asdf.yaml  # Namespaceの削除
 $ rm /mnt/k8s/default/deploy/nginx.yaml # Deploymentの削除
 ```
 
-※ Namespace、Deployment限定
 ※ ディレクトリ指定での削除は実装しない。
 
 * 掃除する
