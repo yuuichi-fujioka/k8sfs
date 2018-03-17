@@ -28,8 +28,9 @@ type defaultDir struct {
 
 func NewDefaultDir() defaultDir {
 	return defaultDir{
-		files: map[string]*writableFile{},
-		dirs:  map[string]DirEntry{},
+		files:    map[string]*writableFile{},
+		dirs:     map[string]DirEntry{},
+		tmpFiles: map[string]*writableFile{},
 	}
 }
 
