@@ -39,10 +39,7 @@ func (f *defaultDir) OpenDir() (c []fuse.DirEntry, code fuse.Status) {
 	for k, _ := range f.dirs {
 		c = append(c, fuse.DirEntry{Name: k, Mode: fuse.S_IFDIR})
 	}
-	for k, _ := range f.files {
-		c = append(c, fuse.DirEntry{Name: k, Mode: fuse.S_IFREG})
-	}
-	for k, _ := range f.tmpFiles {
+	for k, _ := range f.GetChildFiles() {
 		c = append(c, fuse.DirEntry{Name: k, Mode: fuse.S_IFREG})
 	}
 	return c, fuse.OK
@@ -54,10 +51,10 @@ func (f *defaultDir) GetChildDirs() map[string]DirEntry {
 
 func (f *defaultDir) GetChildFiles() map[string]nodefs.File {
 	files := map[string]nodefs.File{}
-	for k, n := range f.files {
+	for k, n := range f.tmpFiles {
 		files[k] = n
 	}
-	for k, n := range f.tmpFiles {
+	for k, n := range f.files {
 		files[k] = n
 	}
 	return files
