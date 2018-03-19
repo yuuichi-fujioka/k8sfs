@@ -37,7 +37,7 @@ func NewK8sFs() *K8sFs {
 }
 
 func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.Status) {
-	log.Printf("fs/GetAttr: %s\n", name)
+	log.Printf("[FUSE] GetAttr: %s\n", name)
 	f := GetFile(me.root, name)
 	if f == nil {
 		return nil, fuse.ENOENT
@@ -48,19 +48,19 @@ func (me *K8sFs) GetAttr(name string, context *fuse.Context) (*fuse.Attr, fuse.S
 }
 
 func (me *K8sFs) OpenDir(name string, context *fuse.Context) (c []fuse.DirEntry, code fuse.Status) {
-	log.Printf("fs/OpenDir: %s\n", name)
+	log.Printf("[FUSE] OpenDir: %s\n", name)
 	c, code = me.root.GetDir(name).OpenDir()
 	return
 }
 
 func (me *K8sFs) Open(name string, flags uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-	log.Printf("fs/Open: %s\n", name)
+	log.Printf("[FUSE] Open: %s\n", name)
 	f := GetFile(me.root, name)
 	return f, fuse.OK
 }
 
 func (me *K8sFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Status {
-	log.Printf("fs/Mkdir: %s\n", name)
+	log.Printf("[FUSE] Mkdir: %s\n", name)
 
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")
@@ -68,19 +68,19 @@ func (me *K8sFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Sta
 }
 
 func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
-	log.Printf("fs/Unlink: %s\n", name)
+	log.Printf("[FUSE] Unlink: %s\n", name)
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")
 	return me.root.GetDir(parentName).Unlink(names[len(names)-1])
 }
 
 func (me *K8sFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
-	log.Printf("fs/Rmdir: %s\n", name)
+	log.Printf("[FUSE] Rmdir: %s\n", name)
 	return me.root.GetDir(name).Rmdir()
 }
 
 func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
-	log.Printf("fs/Create: %s %o %o\n", name, flags, mode)
+	log.Printf("[FUSE] Create: %s %o %o\n", name, flags, mode)
 
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")

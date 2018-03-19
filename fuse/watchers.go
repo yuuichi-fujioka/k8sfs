@@ -69,7 +69,7 @@ func (me *nsWatcher) StopAll() {
 }
 
 func (me *nsWatcher) watchPods() {
-	log.Printf("start watchPods/%s", me.Namespace)
+	log.Printf("[Watch] start watchPods/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("po")
@@ -86,7 +86,7 @@ func (me *nsWatcher) watchPods() {
 		for {
 			select {
 			case <-me.closeChannels["po"]:
-				log.Printf("finish watchPods/%s", me.Namespace)
+				log.Printf("[Watch] finish watchPods/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -95,14 +95,16 @@ func (me *nsWatcher) watchPods() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("po/Added")
+					log.Printf("[Watch] po/Added on %s\n", me.Namespace)
 					poDir.AddPod(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] po/Modified on %s\n", me.Namespace)
 					poDir.UpdatePod(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] po/Deleted on %s\n", me.Namespace)
 					poDir.DeletePod(ev.Object)
 				}
 			}
@@ -111,7 +113,7 @@ func (me *nsWatcher) watchPods() {
 }
 
 func (me *nsWatcher) watchServices() {
-	log.Printf("start watchServices/%s", me.Namespace)
+	log.Printf("[Watch] start watchServices/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("svc")
@@ -128,7 +130,7 @@ func (me *nsWatcher) watchServices() {
 		for {
 			select {
 			case <-me.closeChannels["svc"]:
-				log.Printf("finish watchServices/%s", me.Namespace)
+				log.Printf("[Watch] finish watchServices/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -137,14 +139,16 @@ func (me *nsWatcher) watchServices() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("svc/Added")
+					log.Printf("[Watch] svc/Added on %s\n", me.Namespace)
 					svcDir.AddService(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] svc/Modified on %s\n", me.Namespace)
 					svcDir.UpdateService(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] svc/Deleted on %s\n", me.Namespace)
 					svcDir.DeleteService(ev.Object)
 				}
 			}
@@ -153,7 +157,7 @@ func (me *nsWatcher) watchServices() {
 }
 
 func (me *nsWatcher) watchConfigMaps() {
-	log.Printf("start watchConfigMaps/%s", me.Namespace)
+	log.Printf("[Watch] start watchConfigMaps/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("cm")
@@ -170,7 +174,7 @@ func (me *nsWatcher) watchConfigMaps() {
 		for {
 			select {
 			case <-me.closeChannels["cm"]:
-				log.Printf("finish watchConfigMaps/%s", me.Namespace)
+				log.Printf("[Watch] finish watchConfigMaps/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -179,14 +183,16 @@ func (me *nsWatcher) watchConfigMaps() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("cm/Added")
+					log.Printf("[Watch] cm/Added on %s\n", me.Namespace)
 					cmDir.AddConfigMap(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] cm/Modified on %s\n", me.Namespace)
 					cmDir.UpdateConfigMap(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] cm/Deleted on %s\n", me.Namespace)
 					cmDir.DeleteConfigMap(ev.Object)
 				}
 			}
@@ -195,7 +201,7 @@ func (me *nsWatcher) watchConfigMaps() {
 }
 
 func (me *nsWatcher) watchDeployments() {
-	log.Printf("start watchDeployments/%s", me.Namespace)
+	log.Printf("[Watch] start watchDeployments/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("deploy")
@@ -212,7 +218,7 @@ func (me *nsWatcher) watchDeployments() {
 		for {
 			select {
 			case <-me.closeChannels["deploy"]:
-				log.Printf("finish watchDeployments/%s", me.Namespace)
+				log.Printf("[Watch] finish watchDeployments/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -221,14 +227,16 @@ func (me *nsWatcher) watchDeployments() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("deploy/Added")
+					log.Printf("[Watch] deploy/Added on %s\n", me.Namespace)
 					deployDir.AddDeployment(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] deploy/Modified on %s\n", me.Namespace)
 					deployDir.UpdateDeployment(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] deploy/Deleted on %s\n", me.Namespace)
 					deployDir.DeleteDeployment(ev.Object)
 				}
 			}
@@ -238,7 +246,7 @@ func (me *nsWatcher) watchDeployments() {
 }
 
 func (me *nsWatcher) watchEndpoints() {
-	log.Printf("start watchEndpoints/%s", me.Namespace)
+	log.Printf("[Watch] start watchEndpoints/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ep")
@@ -255,7 +263,7 @@ func (me *nsWatcher) watchEndpoints() {
 		for {
 			select {
 			case <-me.closeChannels["ep"]:
-				log.Printf("finish watchEndpoints/%s", me.Namespace)
+				log.Printf("[Watch] finish watchEndpoints/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -264,14 +272,16 @@ func (me *nsWatcher) watchEndpoints() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("ep/Added")
+					log.Printf("[Watch] ep/Added on %s\n", me.Namespace)
 					epDir.AddEndpoints(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] ep/Modified on %s\n", me.Namespace)
 					epDir.UpdateEndpoints(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] ep/Deleted on %s\n", me.Namespace)
 					epDir.DeleteEndpoints(ev.Object)
 				}
 			}
@@ -280,7 +290,7 @@ func (me *nsWatcher) watchEndpoints() {
 }
 
 func (me *nsWatcher) watchEvents() {
-	log.Printf("start watchEvents/%s", me.Namespace)
+	log.Printf("[Watch] start watchEvents/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ev")
@@ -297,7 +307,7 @@ func (me *nsWatcher) watchEvents() {
 		for {
 			select {
 			case <-me.closeChannels["ev"]:
-				log.Printf("finish watchEvents/%s", me.Namespace)
+				log.Printf("[Watch] finish watchEvents/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -306,14 +316,16 @@ func (me *nsWatcher) watchEvents() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("ev/Added")
+					log.Printf("[Watch] ev/Added on %s\n", me.Namespace)
 					evDir.AddEvent(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] ev/Modified on %s\n", me.Namespace)
 					evDir.UpdateEvent(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] ev/Deleted on %s\n", me.Namespace)
 					evDir.DeleteEvent(ev.Object)
 				}
 			}
@@ -322,7 +334,7 @@ func (me *nsWatcher) watchEvents() {
 }
 
 func (me *nsWatcher) watchIngresses() {
-	log.Printf("start watchIngresses/%s", me.Namespace)
+	log.Printf("[Watch] start watchIngresses/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ing")
@@ -339,7 +351,7 @@ func (me *nsWatcher) watchIngresses() {
 		for {
 			select {
 			case <-me.closeChannels["ing"]:
-				log.Printf("finish watchIngresses/%s", me.Namespace)
+				log.Printf("[Watch] finish watchIngresses/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -348,14 +360,16 @@ func (me *nsWatcher) watchIngresses() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("ing/Added")
+					log.Printf("[Watch] ing/Added on %s\n", me.Namespace)
 					ingDir.AddIngress(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] ing/Modified on %s\n", me.Namespace)
 					ingDir.UpdateIngress(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] ing/Deleted on %s\n", me.Namespace)
 					ingDir.DeleteIngress(ev.Object)
 				}
 			}
@@ -364,7 +378,7 @@ func (me *nsWatcher) watchIngresses() {
 }
 
 func (me *nsWatcher) watchPersistentVolumeClaims() {
-	log.Printf("start watchPersistentVolumeClaims/%s", me.Namespace)
+	log.Printf("[Watch] start watchPersistentVolumeClaims/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("pvc")
@@ -381,7 +395,7 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 		for {
 			select {
 			case <-me.closeChannels["pvc"]:
-				log.Printf("finish watchPersistentVolumeClaims/%s", me.Namespace)
+				log.Printf("[Watch] finish watchPersistentVolumeClaims/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -390,14 +404,16 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("pvc/Added")
+					log.Printf("[Watch] pvc/Added on %s\n", me.Namespace)
 					pvcDir.AddPersistentVolumeClaim(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] pvc/Modified on %s\n", me.Namespace)
 					pvcDir.UpdatePersistentVolumeClaim(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] pvc/Deleted on %s\n", me.Namespace)
 					pvcDir.DeletePersistentVolumeClaim(ev.Object)
 				}
 			}
@@ -406,7 +422,7 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 }
 
 func (me *nsWatcher) watchReplicationControllers() {
-	log.Printf("start watchReplicationControllers/%s", me.Namespace)
+	log.Printf("[Watch] start watchReplicationControllers/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rc")
@@ -423,7 +439,7 @@ func (me *nsWatcher) watchReplicationControllers() {
 		for {
 			select {
 			case <-me.closeChannels["rc"]:
-				log.Printf("finish watchReplicationControllers/%s", me.Namespace)
+				log.Printf("[Watch] finish watchReplicationControllers/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -432,14 +448,16 @@ func (me *nsWatcher) watchReplicationControllers() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("rc/Added")
+					log.Printf("[Watch] rc/Added on %s\n", me.Namespace)
 					rcDir.AddReplicationController(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] rc/Modified on %s\n", me.Namespace)
 					rcDir.UpdateReplicationController(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] rc/Deleted on %s\n", me.Namespace)
 					rcDir.DeleteReplicationController(ev.Object)
 				}
 			}
@@ -448,7 +466,7 @@ func (me *nsWatcher) watchReplicationControllers() {
 }
 
 func (me *nsWatcher) watchServiceAccounts() {
-	log.Printf("start watchServiceAccounts/%s", me.Namespace)
+	log.Printf("[Watch] start watchServiceAccounts/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("sa")
@@ -465,7 +483,7 @@ func (me *nsWatcher) watchServiceAccounts() {
 		for {
 			select {
 			case <-me.closeChannels["sa"]:
-				log.Printf("finish watchServiceAccounts/%s", me.Namespace)
+				log.Printf("[Watch] finish watchServiceAccounts/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -474,14 +492,16 @@ func (me *nsWatcher) watchServiceAccounts() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("sa/Added")
+					log.Printf("[Watch] sa/Added on %s\n", me.Namespace)
 					saDir.AddServiceAccount(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] sa/Modified on %s\n", me.Namespace)
 					saDir.UpdateServiceAccount(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] sa/Deleted on %s\n", me.Namespace)
 					saDir.DeleteServiceAccount(ev.Object)
 				}
 			}
@@ -490,7 +510,7 @@ func (me *nsWatcher) watchServiceAccounts() {
 }
 
 func (me *nsWatcher) watchSecrets() {
-	log.Printf("start watchSecrets/%s", me.Namespace)
+	log.Printf("[Watch] start watchSecrets/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("secrets")
@@ -507,7 +527,7 @@ func (me *nsWatcher) watchSecrets() {
 		for {
 			select {
 			case <-me.closeChannels["secrets"]:
-				log.Printf("finish watchSecrets/%s", me.Namespace)
+				log.Printf("[Watch] finish watchSecrets/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -516,14 +536,16 @@ func (me *nsWatcher) watchSecrets() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("secrets/Added")
+					log.Printf("[Watch] secrets/Added on %s\n", me.Namespace)
 					secretsDir.AddSecret(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] secrets/Modified on %s\n", me.Namespace)
 					secretsDir.UpdateSecret(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] secrets/Deleted on %s\n", me.Namespace)
 					secretsDir.DeleteSecret(ev.Object)
 				}
 			}
@@ -532,7 +554,7 @@ func (me *nsWatcher) watchSecrets() {
 }
 
 func (me *nsWatcher) watchDaemonSets() {
-	log.Printf("start watchDaemonSets/%s", me.Namespace)
+	log.Printf("[Watch] start watchDaemonSets/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ds")
@@ -549,7 +571,7 @@ func (me *nsWatcher) watchDaemonSets() {
 		for {
 			select {
 			case <-me.closeChannels["ds"]:
-				log.Printf("finish watchDaemonSets/%s", me.Namespace)
+				log.Printf("[Watch] finish watchDaemonSets/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -558,14 +580,16 @@ func (me *nsWatcher) watchDaemonSets() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("ds/Added")
+					log.Printf("[Watch] ds/Added on %s\n", me.Namespace)
 					dsDir.AddDaemonSet(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] ds/Modified on %s\n", me.Namespace)
 					dsDir.UpdateDaemonSet(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] ds/Deleted on %s\n", me.Namespace)
 					dsDir.DeleteDaemonSet(ev.Object)
 				}
 			}
@@ -575,7 +599,7 @@ func (me *nsWatcher) watchDaemonSets() {
 }
 
 func (me *nsWatcher) watchReplicaSets() {
-	log.Printf("start watchReplicaSets/%s", me.Namespace)
+	log.Printf("[Watch] start watchReplicaSets/%s\n", me.Namespace)
 
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rs")
@@ -592,7 +616,7 @@ func (me *nsWatcher) watchReplicaSets() {
 		for {
 			select {
 			case <-me.closeChannels["rs"]:
-				log.Printf("finish watchReplicaSets/%s", me.Namespace)
+				log.Printf("[Watch] finish watchReplicaSets/%s\n", me.Namespace)
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -601,14 +625,16 @@ func (me *nsWatcher) watchReplicaSets() {
 
 				switch ev.Type {
 				case watch.Added:
-					log.Println("rs/Added")
+					log.Printf("[Watch] rs/Added on %s\n", me.Namespace)
 					rsDir.AddReplicaSet(ev.Object)
 
 				case watch.Modified:
 					// Update
+					log.Printf("[Watch] rs/Modified on %s\n", me.Namespace)
 					rsDir.UpdateReplicaSet(ev.Object)
 				case watch.Deleted:
 					// Delete
+					log.Printf("[Watch] rs/Deleted on %s\n", me.Namespace)
 					rsDir.DeleteReplicaSet(ev.Object)
 				}
 			}
