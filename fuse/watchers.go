@@ -16,27 +16,12 @@ type nsWatcher struct {
 
 func NewNsWatcher(namespace string) *nsWatcher {
 	return &nsWatcher{
-		Namespace: namespace,
-		closeChannels: map[string](chan bool){
-			"cm":      make(chan bool),
-			"deploy":  make(chan bool),
-			"ep":      make(chan bool),
-			"ev":      make(chan bool),
-			"ing":     make(chan bool),
-			"po":      make(chan bool),
-			"pvc":     make(chan bool),
-			"rc":      make(chan bool),
-			"sa":      make(chan bool),
-			"secrets": make(chan bool),
-			"svc":     make(chan bool),
-			"ds":      make(chan bool),
-			"rs":      make(chan bool),
-		},
+		Namespace:     namespace,
+		closeChannels: map[string](chan bool){},
 	}
 }
 
 func (me *nsWatcher) StartAll() {
-
 	go me.watchPods()
 	go me.watchServices()
 	go me.watchConfigMaps()
@@ -53,24 +38,15 @@ func (me *nsWatcher) StartAll() {
 }
 
 func (me *nsWatcher) StopAll() {
-	me.closeChannels["cm"] <- true
-	me.closeChannels["deploy"] <- true
-	me.closeChannels["ep"] <- true
-	me.closeChannels["ev"] <- true
-	me.closeChannels["ing"] <- true
-	me.closeChannels["po"] <- true
-	me.closeChannels["pvc"] <- true
-	me.closeChannels["rc"] <- true
-	me.closeChannels["sa"] <- true
-	me.closeChannels["secrets"] <- true
-	me.closeChannels["svc"] <- true
-	me.closeChannels["ds"] <- true
-	me.closeChannels["rs"] <- true
+	for _, ch := range me.closeChannels {
+		ch <- true
+	}
 }
 
 func (me *nsWatcher) watchPods() {
 	log.Printf("[Watch] start watchPods/%s\n", me.Namespace)
 
+	me.closeChannels["po"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("po")
 	poDir := dir.(*podsDir)
@@ -87,6 +63,7 @@ func (me *nsWatcher) watchPods() {
 			select {
 			case <-me.closeChannels["po"]:
 				log.Printf("[Watch] finish watchPods/%s\n", me.Namespace)
+				delete(me.closeChannels, "po")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -115,6 +92,7 @@ func (me *nsWatcher) watchPods() {
 func (me *nsWatcher) watchServices() {
 	log.Printf("[Watch] start watchServices/%s\n", me.Namespace)
 
+	me.closeChannels["svc"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("svc")
 	svcDir := dir.(*servicesDir)
@@ -131,6 +109,7 @@ func (me *nsWatcher) watchServices() {
 			select {
 			case <-me.closeChannels["svc"]:
 				log.Printf("[Watch] finish watchServices/%s\n", me.Namespace)
+				delete(me.closeChannels, "svc")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -159,6 +138,7 @@ func (me *nsWatcher) watchServices() {
 func (me *nsWatcher) watchConfigMaps() {
 	log.Printf("[Watch] start watchConfigMaps/%s\n", me.Namespace)
 
+	me.closeChannels["cm"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("cm")
 	cmDir := dir.(*configMapsDir)
@@ -175,6 +155,7 @@ func (me *nsWatcher) watchConfigMaps() {
 			select {
 			case <-me.closeChannels["cm"]:
 				log.Printf("[Watch] finish watchConfigMaps/%s\n", me.Namespace)
+				delete(me.closeChannels, "cm")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -203,6 +184,7 @@ func (me *nsWatcher) watchConfigMaps() {
 func (me *nsWatcher) watchDeployments() {
 	log.Printf("[Watch] start watchDeployments/%s\n", me.Namespace)
 
+	me.closeChannels["deploy"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("deploy")
 	deployDir := dir.(*deploymentsDir)
@@ -219,6 +201,7 @@ func (me *nsWatcher) watchDeployments() {
 			select {
 			case <-me.closeChannels["deploy"]:
 				log.Printf("[Watch] finish watchDeployments/%s\n", me.Namespace)
+				delete(me.closeChannels, "deploy")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -248,6 +231,7 @@ func (me *nsWatcher) watchDeployments() {
 func (me *nsWatcher) watchEndpoints() {
 	log.Printf("[Watch] start watchEndpoints/%s\n", me.Namespace)
 
+	me.closeChannels["ep"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ep")
 	epDir := dir.(*endpointsDir)
@@ -264,6 +248,7 @@ func (me *nsWatcher) watchEndpoints() {
 			select {
 			case <-me.closeChannels["ep"]:
 				log.Printf("[Watch] finish watchEndpoints/%s\n", me.Namespace)
+				delete(me.closeChannels, "ep")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -292,6 +277,7 @@ func (me *nsWatcher) watchEndpoints() {
 func (me *nsWatcher) watchEvents() {
 	log.Printf("[Watch] start watchEvents/%s\n", me.Namespace)
 
+	me.closeChannels["ev"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ev")
 	evDir := dir.(*eventsDir)
@@ -308,6 +294,7 @@ func (me *nsWatcher) watchEvents() {
 			select {
 			case <-me.closeChannels["ev"]:
 				log.Printf("[Watch] finish watchEvents/%s\n", me.Namespace)
+				delete(me.closeChannels, "ev")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -336,6 +323,7 @@ func (me *nsWatcher) watchEvents() {
 func (me *nsWatcher) watchIngresses() {
 	log.Printf("[Watch] start watchIngresses/%s\n", me.Namespace)
 
+	me.closeChannels["ing"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ing")
 	ingDir := dir.(*ingresssDir)
@@ -352,6 +340,7 @@ func (me *nsWatcher) watchIngresses() {
 			select {
 			case <-me.closeChannels["ing"]:
 				log.Printf("[Watch] finish watchIngresses/%s\n", me.Namespace)
+				delete(me.closeChannels, "ing")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -380,6 +369,7 @@ func (me *nsWatcher) watchIngresses() {
 func (me *nsWatcher) watchPersistentVolumeClaims() {
 	log.Printf("[Watch] start watchPersistentVolumeClaims/%s\n", me.Namespace)
 
+	me.closeChannels["pvc"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("pvc")
 	pvcDir := dir.(*persistentVolumeClaimsDir)
@@ -396,6 +386,7 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 			select {
 			case <-me.closeChannels["pvc"]:
 				log.Printf("[Watch] finish watchPersistentVolumeClaims/%s\n", me.Namespace)
+				delete(me.closeChannels, "pvc")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -424,6 +415,7 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 func (me *nsWatcher) watchReplicationControllers() {
 	log.Printf("[Watch] start watchReplicationControllers/%s\n", me.Namespace)
 
+	me.closeChannels["rc"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rc")
 	rcDir := dir.(*replicationControllersDir)
@@ -440,6 +432,7 @@ func (me *nsWatcher) watchReplicationControllers() {
 			select {
 			case <-me.closeChannels["rc"]:
 				log.Printf("[Watch] finish watchReplicationControllers/%s\n", me.Namespace)
+				delete(me.closeChannels, "rc")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -468,6 +461,7 @@ func (me *nsWatcher) watchReplicationControllers() {
 func (me *nsWatcher) watchServiceAccounts() {
 	log.Printf("[Watch] start watchServiceAccounts/%s\n", me.Namespace)
 
+	me.closeChannels["sa"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("sa")
 	saDir := dir.(*serviceAccountsDir)
@@ -484,6 +478,7 @@ func (me *nsWatcher) watchServiceAccounts() {
 			select {
 			case <-me.closeChannels["sa"]:
 				log.Printf("[Watch] finish watchServiceAccounts/%s\n", me.Namespace)
+				delete(me.closeChannels, "sa")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -512,6 +507,7 @@ func (me *nsWatcher) watchServiceAccounts() {
 func (me *nsWatcher) watchSecrets() {
 	log.Printf("[Watch] start watchSecrets/%s\n", me.Namespace)
 
+	me.closeChannels["secrets"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("secrets")
 	secretsDir := dir.(*secretsDir)
@@ -528,6 +524,7 @@ func (me *nsWatcher) watchSecrets() {
 			select {
 			case <-me.closeChannels["secrets"]:
 				log.Printf("[Watch] finish watchSecrets/%s\n", me.Namespace)
+				delete(me.closeChannels, "secrets")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -556,6 +553,7 @@ func (me *nsWatcher) watchSecrets() {
 func (me *nsWatcher) watchDaemonSets() {
 	log.Printf("[Watch] start watchDaemonSets/%s\n", me.Namespace)
 
+	me.closeChannels["ds"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ds")
 	dsDir := dir.(*daemonSetsDir)
@@ -572,6 +570,7 @@ func (me *nsWatcher) watchDaemonSets() {
 			select {
 			case <-me.closeChannels["ds"]:
 				log.Printf("[Watch] finish watchDaemonSets/%s\n", me.Namespace)
+				delete(me.closeChannels, "ds")
 				return
 			case ev, ok := <-ch:
 				if !ok {
@@ -601,6 +600,7 @@ func (me *nsWatcher) watchDaemonSets() {
 func (me *nsWatcher) watchReplicaSets() {
 	log.Printf("[Watch] start watchReplicaSets/%s\n", me.Namespace)
 
+	me.closeChannels["rs"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rs")
 	rsDir := dir.(*replicaSetsDir)
@@ -617,6 +617,7 @@ func (me *nsWatcher) watchReplicaSets() {
 			select {
 			case <-me.closeChannels["rs"]:
 				log.Printf("[Watch] finish watchReplicaSets/%s\n", me.Namespace)
+				delete(me.closeChannels, "rs")
 				return
 			case ev, ok := <-ch:
 				if !ok {
