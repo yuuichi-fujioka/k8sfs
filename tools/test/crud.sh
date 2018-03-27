@@ -34,7 +34,7 @@ rm -f /mnt/k8s/crudtest.yaml
 
 sleep 30 # TODO fix way to handling that deleting a namespace is finished.
 
-if [ ! -d /mnt/k8s/crudtest ]; then
+if [ -d /mnt/k8s/crudtest ]; then
     echo ns/crudtest should be deleted if /mnt/k8sf/crudtest.yaml is deleted.
     exit 5
 fi
