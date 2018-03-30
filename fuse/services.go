@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type servicesDir struct {
@@ -81,26 +80,21 @@ func (f *servicesDir) Create(name string, flags uint32, mode uint32) (file nodef
 	return nil, fuse.ENOSYS
 }
 
-func (f *servicesDir) AddService(obj runtime.Object) {
-	if !f.UpdateService(obj) {
-		newFile := NewServiceFile(obj)
+func (f *servicesDir) AddService(svc *corev1.Service) {
+	if !f.UpdateService(svc) {
+		newFile := NewServiceFile(svc)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *servicesDir) UpdateService(obj runtime.Object) (updated bool) {
-
-	svc, ok := obj.(*corev1.Service)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *servicesDir) UpdateService(svc *corev1.Service) (updated bool) {
 
 	updated = false
 
 	name := svc.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateServiceFile(file, obj)
+			UpdateServiceFile(file, svc)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *servicesDir) UpdateService(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *servicesDir) DeleteService(obj runtime.Object) {
+func (f *servicesDir) DeleteService(svc *corev1.Service) {
 
-	svc, ok := obj.(*corev1.Service)
-	if !ok {
-		panic("!!!!")
-	}
 	name := svc.Name
 
 	delete(f.dirs, name)

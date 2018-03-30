@@ -80,49 +80,32 @@ func (me *nsWatcher) watchPods() {
 func (me *nsWatcher) watchServices() {
 	log.Printf("[Watch] start watchServices/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["svc"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("svc")
 	svcDir := dir.(*servicesDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().Services(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchServices(
+		me.Namespace,
+		func(service *corev1.Service) {
+			svcDir.AddService(service)
+		},
+		func(oldservice, newservice *corev1.Service) {
+			svcDir.UpdateService(newservice)
+		},
+		func(service *corev1.Service) {
+			svcDir.DeleteService(service)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["svc"]:
-				log.Printf("[Watch] finish watchServices/%s\n", me.Namespace)
-				delete(me.closeChannels, "svc")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["svc"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "svc")
+	<-me.closeChannels["svc"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] svc/Added on %s\n", me.Namespace)
-					svcDir.AddService(ev.Object)
+	log.Printf("[Watch] finish watchServices/%s\n", me.Namespace)
 
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] svc/Modified on %s\n", me.Namespace)
-					svcDir.UpdateService(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] svc/Deleted on %s\n", me.Namespace)
-					svcDir.DeleteService(ev.Object)
-				}
-			}
-		}
-	}
 }
 
 func (me *nsWatcher) watchConfigMaps() {

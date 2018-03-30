@@ -2,25 +2,14 @@ package fuse
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func NewServiceFile(obj runtime.Object) *writableFile {
-	svc, ok := obj.(*corev1.Service)
-	if !ok {
-		panic("!!!!")
-	}
-
+func NewServiceFile(svc *corev1.Service) *writableFile {
 	meta := NewMetaObj(&svc.TypeMeta, &svc.ObjectMeta)
-	return NewObjFile(obj, meta, nil)
+	return NewObjFile(svc, meta, nil)
 }
 
-func UpdateServiceFile(f *writableFile, obj runtime.Object) {
-	svc, ok := obj.(*corev1.Service)
-	if !ok {
-		panic("!!!!")
-	}
-
+func UpdateServiceFile(f *writableFile, svc *corev1.Service) {
 	meta := NewMetaObj(&svc.TypeMeta, &svc.ObjectMeta)
-	f.Update(obj, meta)
+	f.Update(svc, meta)
 }
