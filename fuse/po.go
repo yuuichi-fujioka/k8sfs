@@ -2,25 +2,14 @@ package fuse
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func NewPodFile(obj runtime.Object) *writableFile {
-	pod, ok := obj.(*corev1.Pod)
-	if !ok {
-		panic("!!!!")
-	}
-
+func NewPodFile(pod *corev1.Pod) *writableFile {
 	meta := NewMetaObj(&pod.TypeMeta, &pod.ObjectMeta)
-	return NewObjFile(obj, meta, nil)
+	return NewObjFile(pod, meta, nil)
 }
 
-func UpdatePodFile(f *writableFile, obj runtime.Object) {
-	pod, ok := obj.(*corev1.Pod)
-	if !ok {
-		panic("!!!!")
-	}
-
+func UpdatePodFile(f *writableFile, pod *corev1.Pod) {
 	meta := NewMetaObj(&pod.TypeMeta, &pod.ObjectMeta)
-	f.Update(obj, meta)
+	f.Update(pod, meta)
 }

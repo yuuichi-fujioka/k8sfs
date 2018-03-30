@@ -6,6 +6,7 @@ import (
 
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 )
@@ -49,49 +50,31 @@ func (me *nsWatcher) StopAll() {
 func (me *nsWatcher) watchPods() {
 	log.Printf("[Watch] start watchPods/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["po"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("po")
 	poDir := dir.(*podsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().Pods(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchPods(
+		me.Namespace,
+		func(pod *corev1.Pod) {
+			poDir.AddPod(pod)
+		},
+		func(oldpod, newpod *corev1.Pod) {
+			poDir.UpdatePod(newpod)
+		},
+		func(pod *corev1.Pod) {
+			poDir.DeletePod(pod)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["po"]:
-				log.Printf("[Watch] finish watchPods/%s\n", me.Namespace)
-				delete(me.closeChannels, "po")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["po"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "po")
+	<-me.closeChannels["po"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] po/Added on %s\n", me.Namespace)
-					poDir.AddPod(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] po/Modified on %s\n", me.Namespace)
-					poDir.UpdatePod(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] po/Deleted on %s\n", me.Namespace)
-					poDir.DeletePod(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchPods/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchServices() {

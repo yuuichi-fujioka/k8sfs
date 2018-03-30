@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type podsDir struct {
@@ -81,26 +80,21 @@ func (f *podsDir) Create(name string, flags uint32, mode uint32) (file nodefs.Fi
 	return nil, fuse.ENOSYS
 }
 
-func (f *podsDir) AddPod(obj runtime.Object) {
-	if !f.UpdatePod(obj) {
-		newFile := NewPodFile(obj)
+func (f *podsDir) AddPod(pod *corev1.Pod) {
+	if !f.UpdatePod(pod) {
+		newFile := NewPodFile(pod)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *podsDir) UpdatePod(obj runtime.Object) (updated bool) {
-
-	po, ok := obj.(*corev1.Pod)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *podsDir) UpdatePod(pod *corev1.Pod) (updated bool) {
 
 	updated = false
 
-	name := po.Name
+	name := pod.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdatePodFile(file, obj)
+			UpdatePodFile(file, pod)
 			updated = true
 			break
 		}
@@ -108,13 +102,9 @@ func (f *podsDir) UpdatePod(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *podsDir) DeletePod(obj runtime.Object) {
+func (f *podsDir) DeletePod(pod *corev1.Pod) {
 
-	po, ok := obj.(*corev1.Pod)
-	if !ok {
-		panic("!!!!")
-	}
-	name := po.Name
+	name := pod.Name
 
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
