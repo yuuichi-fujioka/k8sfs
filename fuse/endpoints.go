@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type endpointsDir struct {
@@ -81,26 +80,21 @@ func (f *endpointsDir) Create(name string, flags uint32, mode uint32) (file node
 	return nil, fuse.ENOSYS
 }
 
-func (f *endpointsDir) AddEndpoints(obj runtime.Object) {
-	if !f.UpdateEndpoints(obj) {
-		newFile := NewEndpointsFile(obj)
+func (f *endpointsDir) AddEndpoints(ep *corev1.Endpoints) {
+	if !f.UpdateEndpoints(ep) {
+		newFile := NewEndpointsFile(ep)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *endpointsDir) UpdateEndpoints(obj runtime.Object) (updated bool) {
-
-	ep, ok := obj.(*corev1.Endpoints)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *endpointsDir) UpdateEndpoints(ep *corev1.Endpoints) (updated bool) {
 
 	updated = false
 
 	name := ep.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateEndpointsFile(file, obj)
+			UpdateEndpointsFile(file, ep)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *endpointsDir) UpdateEndpoints(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *endpointsDir) DeleteEndpoints(obj runtime.Object) {
+func (f *endpointsDir) DeleteEndpoints(ep *corev1.Endpoints) {
 
-	ep, ok := obj.(*corev1.Endpoints)
-	if !ok {
-		panic("!!!!")
-	}
 	name := ep.Name
 
 	delete(f.dirs, name)

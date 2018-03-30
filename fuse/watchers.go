@@ -172,49 +172,31 @@ func (me *nsWatcher) watchDeployments() {
 func (me *nsWatcher) watchEndpoints() {
 	log.Printf("[Watch] start watchEndpoints/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["ep"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ep")
 	epDir := dir.(*endpointsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().Endpoints(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchEndpoints(
+		me.Namespace,
+		func(ep *corev1.Endpoints) {
+			epDir.AddEndpoints(ep)
+		},
+		func(oldep, newep *corev1.Endpoints) {
+			epDir.UpdateEndpoints(newep)
+		},
+		func(ep *corev1.Endpoints) {
+			epDir.DeleteEndpoints(ep)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["ep"]:
-				log.Printf("[Watch] finish watchEndpoints/%s\n", me.Namespace)
-				delete(me.closeChannels, "ep")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["ep"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "ep")
+	<-me.closeChannels["ep"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] ep/Added on %s\n", me.Namespace)
-					epDir.AddEndpoints(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] ep/Modified on %s\n", me.Namespace)
-					epDir.UpdateEndpoints(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] ep/Deleted on %s\n", me.Namespace)
-					epDir.DeleteEndpoints(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchEndpoints/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchEvents() {
