@@ -2,6 +2,7 @@ package fuse
 
 import (
 	"log"
+	"sync"
 
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
@@ -12,12 +13,14 @@ import (
 type nsWatcher struct {
 	Namespace     string
 	closeChannels map[string](chan bool)
+	lock          *sync.RWMutex
 }
 
 func NewNsWatcher(namespace string) *nsWatcher {
 	return &nsWatcher{
 		Namespace:     namespace,
 		closeChannels: map[string](chan bool){},
+		lock:          &sync.RWMutex{},
 	}
 }
 
@@ -46,7 +49,9 @@ func (me *nsWatcher) StopAll() {
 func (me *nsWatcher) watchPods() {
 	log.Printf("[Watch] start watchPods/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["po"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("po")
 	poDir := dir.(*podsDir)
@@ -92,7 +97,9 @@ func (me *nsWatcher) watchPods() {
 func (me *nsWatcher) watchServices() {
 	log.Printf("[Watch] start watchServices/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["svc"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("svc")
 	svcDir := dir.(*servicesDir)
@@ -138,7 +145,9 @@ func (me *nsWatcher) watchServices() {
 func (me *nsWatcher) watchConfigMaps() {
 	log.Printf("[Watch] start watchConfigMaps/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["cm"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("cm")
 	cmDir := dir.(*configMapsDir)
@@ -184,7 +193,9 @@ func (me *nsWatcher) watchConfigMaps() {
 func (me *nsWatcher) watchDeployments() {
 	log.Printf("[Watch] start watchDeployments/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["deploy"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("deploy")
 	deployDir := dir.(*deploymentsDir)
@@ -231,7 +242,9 @@ func (me *nsWatcher) watchDeployments() {
 func (me *nsWatcher) watchEndpoints() {
 	log.Printf("[Watch] start watchEndpoints/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["ep"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ep")
 	epDir := dir.(*endpointsDir)
@@ -277,7 +290,9 @@ func (me *nsWatcher) watchEndpoints() {
 func (me *nsWatcher) watchEvents() {
 	log.Printf("[Watch] start watchEvents/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["ev"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ev")
 	evDir := dir.(*eventsDir)
@@ -323,7 +338,9 @@ func (me *nsWatcher) watchEvents() {
 func (me *nsWatcher) watchIngresses() {
 	log.Printf("[Watch] start watchIngresses/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["ing"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ing")
 	ingDir := dir.(*ingresssDir)
@@ -415,7 +432,9 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 func (me *nsWatcher) watchReplicationControllers() {
 	log.Printf("[Watch] start watchReplicationControllers/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["rc"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rc")
 	rcDir := dir.(*replicationControllersDir)
@@ -461,7 +480,9 @@ func (me *nsWatcher) watchReplicationControllers() {
 func (me *nsWatcher) watchServiceAccounts() {
 	log.Printf("[Watch] start watchServiceAccounts/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["sa"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("sa")
 	saDir := dir.(*serviceAccountsDir)
@@ -507,7 +528,9 @@ func (me *nsWatcher) watchServiceAccounts() {
 func (me *nsWatcher) watchSecrets() {
 	log.Printf("[Watch] start watchSecrets/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["secrets"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("secrets")
 	secretsDir := dir.(*secretsDir)
@@ -553,7 +576,9 @@ func (me *nsWatcher) watchSecrets() {
 func (me *nsWatcher) watchDaemonSets() {
 	log.Printf("[Watch] start watchDaemonSets/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["ds"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ds")
 	dsDir := dir.(*daemonSetsDir)
@@ -600,7 +625,9 @@ func (me *nsWatcher) watchDaemonSets() {
 func (me *nsWatcher) watchReplicaSets() {
 	log.Printf("[Watch] start watchReplicaSets/%s\n", me.Namespace)
 
+	me.lock.Lock()
 	me.closeChannels["rs"] = make(chan bool)
+	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rs")
 	rsDir := dir.(*replicaSetsDir)
