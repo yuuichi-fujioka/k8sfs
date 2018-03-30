@@ -111,49 +111,31 @@ func (me *nsWatcher) watchServices() {
 func (me *nsWatcher) watchConfigMaps() {
 	log.Printf("[Watch] start watchConfigMaps/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["cm"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("cm")
 	cmDir := dir.(*configMapsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().ConfigMaps(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchConfigMaps(
+		me.Namespace,
+		func(cm *corev1.ConfigMap) {
+			cmDir.AddConfigMap(cm)
+		},
+		func(oldcm, newcm *corev1.ConfigMap) {
+			cmDir.UpdateConfigMap(newcm)
+		},
+		func(cm *corev1.ConfigMap) {
+			cmDir.DeleteConfigMap(cm)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["cm"]:
-				log.Printf("[Watch] finish watchConfigMaps/%s\n", me.Namespace)
-				delete(me.closeChannels, "cm")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["cm"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "cm")
+	<-me.closeChannels["cm"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] cm/Added on %s\n", me.Namespace)
-					cmDir.AddConfigMap(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] cm/Modified on %s\n", me.Namespace)
-					cmDir.UpdateConfigMap(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] cm/Deleted on %s\n", me.Namespace)
-					cmDir.DeleteConfigMap(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchConfigMaps/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchDeployments() {

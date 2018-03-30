@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type configMapsDir struct {
@@ -81,26 +80,21 @@ func (f *configMapsDir) Create(name string, flags uint32, mode uint32) (file nod
 	return nil, fuse.ENOSYS
 }
 
-func (f *configMapsDir) AddConfigMap(obj runtime.Object) {
-	if !f.UpdateConfigMap(obj) {
-		newFile := NewConfigMapFile(obj)
+func (f *configMapsDir) AddConfigMap(cm *corev1.ConfigMap) {
+	if !f.UpdateConfigMap(cm) {
+		newFile := NewConfigMapFile(cm)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *configMapsDir) UpdateConfigMap(obj runtime.Object) (updated bool) {
-
-	cm, ok := obj.(*corev1.ConfigMap)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *configMapsDir) UpdateConfigMap(cm *corev1.ConfigMap) (updated bool) {
 
 	updated = false
 
 	name := cm.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateConfigMapFile(file, obj)
+			UpdateConfigMapFile(file, cm)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *configMapsDir) UpdateConfigMap(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *configMapsDir) DeleteConfigMap(obj runtime.Object) {
+func (f *configMapsDir) DeleteConfigMap(cm *corev1.ConfigMap) {
 
-	cm, ok := obj.(*corev1.ConfigMap)
-	if !ok {
-		panic("!!!!")
-	}
 	name := cm.Name
 
 	delete(f.dirs, name)
