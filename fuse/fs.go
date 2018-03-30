@@ -64,19 +64,37 @@ func (me *K8sFs) Mkdir(name string, mode uint32, context *fuse.Context) fuse.Sta
 
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")
-	return me.root.GetDir(parentName).Mkdir(names[len(names)-1], mode)
+
+	dir := me.root.GetDir(parentName)
+	if !IsWritable(dir.GetFile()) {
+		return fuse.EPERM
+	}
+
+	return dir.Mkdir(names[len(names)-1], mode)
 }
 
 func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
 	log.Printf("[FUSE] Unlink: %s\n", name)
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")
-	return me.root.GetDir(parentName).Unlink(names[len(names)-1])
+	fileName := names[len(names)-1]
+
+	dir := me.root.GetDir(parentName)
+	file := dir.GetChildFiles()[fileName]
+	if !IsWritable(file) {
+		return fuse.EPERM
+	}
+	return dir.Unlink(fileName)
 }
 
 func (me *K8sFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
 	log.Printf("[FUSE] Rmdir: %s\n", name)
-	return me.root.GetDir(name).Rmdir()
+
+	dir := me.root.GetDir(name)
+	if !IsWritable(dir.GetFile()) {
+		return fuse.EPERM
+	}
+	return dir.Rmdir()
 }
 
 func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
@@ -84,12 +102,19 @@ func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Co
 
 	names := strings.Split(name, "/")
 	parentName := strings.Join(names[:len(names)-1], "/")
-	return me.root.GetDir(parentName).Create(names[len(names)-1], flags, mode)
+
+	dir := me.root.GetDir(parentName)
+	if !IsWritable(dir.GetFile()) {
+		return nil, fuse.EPERM
+	}
+	return dir.Create(names[len(names)-1], flags, mode)
 }
 
 var Fs *K8sFs
 var nfs *pathfs.PathNodeFs
 var topLevelNamespace string
+
+var readOnlyMode bool
 
 func Serve(mountPoint string) {
 	Fs = NewK8sFs()

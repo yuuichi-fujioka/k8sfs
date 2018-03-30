@@ -10,13 +10,15 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-func TestMain(mountpoint, namespace string) {
+func TestMain(mountpoint, namespace string, readonly bool) {
 	topLevelNamespace = namespace
 	if topLevelNamespace == "" {
 		go watchAllNs()
 	} else {
 		go watchNs()
 	}
+
+	readOnlyMode = readonly
 
 	Serve(mountpoint)
 }

@@ -81,6 +81,13 @@ k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # default namespace
 
 ※ namespaceが無くてもエラーにはなりません。
 
+* 読み取り専用でマウントする
+
+```
+$ go get -u github.com/yuuichi-ubuntu /k8sfs
+$ k8sfs -kubeconfig ~/.kube/config -readonly /mnt/k8s
+```
+
 * 見る
 
 ```

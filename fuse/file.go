@@ -74,7 +74,11 @@ func (f *writableFile) GetAttr(out *fuse.Attr) fuse.Status {
 	out.Ctime = f.ctime
 	out.Mtime = f.ctime
 	out.Atime = f.ctime
-	out.Mode = fuse.S_IFREG | 0644
+	if readOnlyMode {
+		out.Mode = fuse.S_IFREG | 0444
+	} else {
+		out.Mode = fuse.S_IFREG | 0644
+	}
 	return fuse.OK
 }
 

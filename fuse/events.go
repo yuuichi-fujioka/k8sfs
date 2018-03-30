@@ -29,7 +29,11 @@ func NewEventsDir(ns string) (string, *eventsDir) {
 func (f *eventsDir) GetAttr(out *fuse.Attr) fuse.Status {
 	SetAttrTimeCluster(out)
 	out.Size = 4096 // block size?
-	out.Mode = fuse.S_IFDIR | 0755
+	if readOnlyMode {
+		out.Mode = fuse.S_IFDIR | 0555
+	} else {
+		out.Mode = fuse.S_IFDIR | 0755
+	}
 	return fuse.OK
 }
 

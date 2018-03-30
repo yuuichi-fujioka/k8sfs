@@ -81,6 +81,13 @@ k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # mount only ns/def
 
 Error doesn't report even if namespace is not exit.
 
+* Mount with Read Only Mode
+
+```
+$ go get -u github.com/yuuichi-ubuntu /k8sfs
+$ k8sfs -kubeconfig ~/.kube/config -readonly /mnt/k8s
+```
+
 * Check
 
 ```

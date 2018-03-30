@@ -21,6 +21,7 @@ func main() {
 	}
 
 	namespace := flag.String("namespace", "", "top level namespace. if this is blank, all namespaces will be mount")
+	readOnly := flag.Bool("readonly", false, "read only mode.")
 
 	flag.Parse()
 
@@ -30,7 +31,7 @@ func main() {
 	log.Printf("argments: %v\n", flag.Args())
 
 	k8s.Init(*kubeconfig)
-	fuse.TestMain(flag.Arg(0), *namespace)
+	fuse.TestMain(flag.Arg(0), *namespace, *readOnly)
 }
 
 func homeDir() string {

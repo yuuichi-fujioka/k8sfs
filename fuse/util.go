@@ -3,6 +3,7 @@ package fuse
 import (
 	"log"
 	"strings"
+	"syscall"
 
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
@@ -81,4 +82,10 @@ func GetNamespaceDir(namespace string) DirEntry {
 	} else {
 		return Fs.root
 	}
+}
+
+func IsWritable(f nodefs.File) bool {
+	attr := &fuse.Attr{}
+	f.GetAttr(attr)
+	return attr.Mode&syscall.S_IWUSR != 0
 }
