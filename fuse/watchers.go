@@ -232,49 +232,31 @@ func (me *nsWatcher) watchEvents() {
 func (me *nsWatcher) watchIngresses() {
 	log.Printf("[Watch] start watchIngresses/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["ing"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ing")
 	ingDir := dir.(*ingresssDir)
-	for {
-		wi, err := k8s.Clientset.ExtensionsV1beta1().Ingresses(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchIngresses(
+		me.Namespace,
+		func(ing *v1beta1.Ingress) {
+			ingDir.AddIngress(ing)
+		},
+		func(olding, newing *v1beta1.Ingress) {
+			ingDir.UpdateIngress(newing)
+		},
+		func(ing *v1beta1.Ingress) {
+			ingDir.DeleteIngress(ing)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["ing"]:
-				log.Printf("[Watch] finish watchIngresses/%s\n", me.Namespace)
-				delete(me.closeChannels, "ing")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["ing"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "ing")
+	<-me.closeChannels["ing"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] ing/Added on %s\n", me.Namespace)
-					ingDir.AddIngress(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] ing/Modified on %s\n", me.Namespace)
-					ingDir.UpdateIngress(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] ing/Deleted on %s\n", me.Namespace)
-					ingDir.DeleteIngress(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchIngresses/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchPersistentVolumeClaims() {

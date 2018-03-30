@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type ingresssDir struct {
@@ -81,26 +80,21 @@ func (f *ingresssDir) Create(name string, flags uint32, mode uint32) (file nodef
 	return nil, fuse.ENOSYS
 }
 
-func (f *ingresssDir) AddIngress(obj runtime.Object) {
-	if !f.UpdateIngress(obj) {
-		newFile := NewIngressFile(obj)
+func (f *ingresssDir) AddIngress(ing *v1beta1.Ingress) {
+	if !f.UpdateIngress(ing) {
+		newFile := NewIngressFile(ing)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *ingresssDir) UpdateIngress(obj runtime.Object) (updated bool) {
-
-	ing, ok := obj.(*v1beta1.Ingress)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *ingresssDir) UpdateIngress(ing *v1beta1.Ingress) (updated bool) {
 
 	updated = false
 
 	name := ing.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateIngressFile(file, obj)
+			UpdateIngressFile(file, ing)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *ingresssDir) UpdateIngress(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *ingresssDir) DeleteIngress(obj runtime.Object) {
+func (f *ingresssDir) DeleteIngress(ing *v1beta1.Ingress) {
 
-	ing, ok := obj.(*v1beta1.Ingress)
-	if !ok {
-		panic("!!!!")
-	}
 	name := ing.Name
 
 	delete(f.dirs, name)
