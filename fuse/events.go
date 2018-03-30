@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type eventsDir struct {
@@ -81,26 +80,21 @@ func (f *eventsDir) Create(name string, flags uint32, mode uint32) (file nodefs.
 	return nil, fuse.ENOSYS
 }
 
-func (f *eventsDir) AddEvent(obj runtime.Object) {
-	if !f.UpdateEvent(obj) {
-		newFile := NewEventFile(obj)
+func (f *eventsDir) AddEvent(ev *corev1.Event) {
+	if !f.UpdateEvent(ev) {
+		newFile := NewEventFile(ev)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *eventsDir) UpdateEvent(obj runtime.Object) (updated bool) {
-
-	ev, ok := obj.(*corev1.Event)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *eventsDir) UpdateEvent(ev *corev1.Event) (updated bool) {
 
 	updated = false
 
 	name := ev.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateEventFile(file, obj)
+			UpdateEventFile(file, ev)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *eventsDir) UpdateEvent(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *eventsDir) DeleteEvent(obj runtime.Object) {
+func (f *eventsDir) DeleteEvent(ev *corev1.Event) {
 
-	ev, ok := obj.(*corev1.Event)
-	if !ok {
-		panic("!!!!")
-	}
 	name := ev.Name
 
 	delete(f.dirs, name)

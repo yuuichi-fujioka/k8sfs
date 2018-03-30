@@ -202,49 +202,31 @@ func (me *nsWatcher) watchEndpoints() {
 func (me *nsWatcher) watchEvents() {
 	log.Printf("[Watch] start watchEvents/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["ev"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ev")
 	evDir := dir.(*eventsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().Events(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchEvents(
+		me.Namespace,
+		func(ev *corev1.Event) {
+			evDir.AddEvent(ev)
+		},
+		func(oldev, newev *corev1.Event) {
+			evDir.UpdateEvent(newev)
+		},
+		func(ev *corev1.Event) {
+			evDir.DeleteEvent(ev)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["ev"]:
-				log.Printf("[Watch] finish watchEvents/%s\n", me.Namespace)
-				delete(me.closeChannels, "ev")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["ev"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "ev")
+	<-me.closeChannels["ev"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] ev/Added on %s\n", me.Namespace)
-					evDir.AddEvent(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] ev/Modified on %s\n", me.Namespace)
-					evDir.UpdateEvent(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] ev/Deleted on %s\n", me.Namespace)
-					evDir.DeleteEvent(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchEvents/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchIngresses() {
