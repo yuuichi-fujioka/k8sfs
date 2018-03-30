@@ -1,13 +1,9 @@
 package fuse
 
 import (
-	"log"
-
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 )
 
 func TestMain(mountpoint, namespace string, readonly bool) {
@@ -31,56 +27,28 @@ func watchNs() {
 func watchAllNs() {
 	watchers := map[string]*nsWatcher{}
 	nsDir := Fs.root.(*namespacesDir)
-	for {
-		log.Printf("[Watch] start watchNs\n")
-		wi, err := k8s.Clientset.CoreV1().Namespaces().Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
+	k8s.WatchNamespaces(
+		func(ns *corev1.Namespace) {
+			nsDir.AddNamespace(ns)
 
-		ch := wi.ResultChan()
-
-		for {
-			ev, ok := <-ch
+			nsw, ok := watchers[ns.Name]
 			if !ok {
-				log.Printf("[Watch] finish watchNs\n")
-				break
+				nsw = NewNsWatcher(ns.Name)
+				watchers[ns.Name] = nsw
+			} else {
+				nsw.StopAll()
 			}
-
-			ns, ok := ev.Object.(*corev1.Namespace)
-			if !ok {
-				panic("!!!!")
+			nsw.StartAll()
+		},
+		func(old, new *corev1.Namespace) {
+			nsDir.UpdateNamespace(new)
+		},
+		func(ns *corev1.Namespace) {
+			nsw, ok := watchers[ns.Name]
+			if ok {
+				nsw.StopAll()
 			}
-
-			nsname := ns.Name
-
-			switch ev.Type {
-			case watch.Added:
-				log.Printf("[Watch] ns/%s is Added\n", nsname)
-				nsDir.AddNamespace(ev.Object)
-
-				nsw, ok := watchers[nsname]
-				if !ok {
-					nsw = NewNsWatcher(nsname)
-					watchers[nsname] = nsw
-				} else {
-					nsw.StopAll()
-				}
-				nsw.StartAll()
-			case watch.Modified:
-				// Update
-				log.Printf("[Watch] ns/%s is Modified\n", nsname)
-				nsDir.UpdateNamespace(ev.Object)
-			case watch.Deleted:
-				// Delete
-				log.Printf("[Watch] ns/%s is Deleted\n", nsname)
-				nsDir.DeleteNamespace(ev.Object)
-				// TODO Stop, watcher
-				nsw, ok := watchers[nsname]
-				if ok {
-					nsw.StopAll()
-				}
-			}
-		}
-	}
+			nsDir.DeleteNamespace(ns)
+		},
+	)
 }

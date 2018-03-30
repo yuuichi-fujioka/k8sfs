@@ -11,7 +11,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type namespacesDir struct {
@@ -101,7 +100,7 @@ func (f *namespacesDir) Create(name string, flags uint32, mode uint32) (file nod
 	return f.AddTmpFile(name, f), fuse.OK
 }
 
-func (f *namespacesDir) AddNamespace(obj runtime.Object) {
+func (f *namespacesDir) AddNamespace(obj *corev1.Namespace) {
 	if !f.UpdateNamespace(obj) {
 		name, newDir := NewNamespaceDir(obj)
 		f.dirs[name] = newDir
@@ -110,16 +109,11 @@ func (f *namespacesDir) AddNamespace(obj runtime.Object) {
 	}
 }
 
-func (f *namespacesDir) UpdateNamespace(obj runtime.Object) (updated bool) {
-
-	ns, ok := obj.(*corev1.Namespace)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *namespacesDir) UpdateNamespace(obj *corev1.Namespace) (updated bool) {
 
 	updated = false
 
-	name := ns.Name
+	name := obj.Name
 	for k, dir := range f.dirs {
 		if k == name {
 			nsDir, ok := (dir).(*namespaceDir)
@@ -141,13 +135,8 @@ func (f *namespacesDir) UpdateNamespace(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *namespacesDir) DeleteNamespace(obj runtime.Object) {
-
-	ns, ok := obj.(*corev1.Namespace)
-	if !ok {
-		panic("!!!!")
-	}
-	name := ns.Name
+func (f *namespacesDir) DeleteNamespace(obj *corev1.Namespace) {
+	name := obj.Name
 
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
