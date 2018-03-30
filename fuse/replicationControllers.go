@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type replicationControllersDir struct {
@@ -81,26 +80,21 @@ func (f *replicationControllersDir) Create(name string, flags uint32, mode uint3
 	return nil, fuse.ENOSYS
 }
 
-func (f *replicationControllersDir) AddReplicationController(obj runtime.Object) {
-	if !f.UpdateReplicationController(obj) {
-		newFile := NewReplicationControllerFile(obj)
+func (f *replicationControllersDir) AddReplicationController(rc *corev1.ReplicationController) {
+	if !f.UpdateReplicationController(rc) {
+		newFile := NewReplicationControllerFile(rc)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *replicationControllersDir) UpdateReplicationController(obj runtime.Object) (updated bool) {
-
-	rc, ok := obj.(*corev1.ReplicationController)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *replicationControllersDir) UpdateReplicationController(rc *corev1.ReplicationController) (updated bool) {
 
 	updated = false
 
 	name := rc.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateReplicationControllerFile(file, obj)
+			UpdateReplicationControllerFile(file, rc)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *replicationControllersDir) UpdateReplicationController(obj runtime.Obje
 	return
 }
 
-func (f *replicationControllersDir) DeleteReplicationController(obj runtime.Object) {
+func (f *replicationControllersDir) DeleteReplicationController(rc *corev1.ReplicationController) {
 
-	rc, ok := obj.(*corev1.ReplicationController)
-	if !ok {
-		panic("!!!!")
-	}
 	name := rc.Name
 
 	delete(f.dirs, name)

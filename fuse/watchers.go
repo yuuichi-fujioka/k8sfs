@@ -292,49 +292,31 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 func (me *nsWatcher) watchReplicationControllers() {
 	log.Printf("[Watch] start watchReplicationControllers/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["rc"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rc")
 	rcDir := dir.(*replicationControllersDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().ReplicationControllers(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchReplicationControllers(
+		me.Namespace,
+		func(rc *corev1.ReplicationController) {
+			rcDir.AddReplicationController(rc)
+		},
+		func(oldrc, newrc *corev1.ReplicationController) {
+			rcDir.UpdateReplicationController(newrc)
+		},
+		func(rc *corev1.ReplicationController) {
+			rcDir.DeleteReplicationController(rc)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["rc"]:
-				log.Printf("[Watch] finish watchReplicationControllers/%s\n", me.Namespace)
-				delete(me.closeChannels, "rc")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["rc"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "rc")
+	<-me.closeChannels["rc"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] rc/Added on %s\n", me.Namespace)
-					rcDir.AddReplicationController(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] rc/Modified on %s\n", me.Namespace)
-					rcDir.UpdateReplicationController(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] rc/Deleted on %s\n", me.Namespace)
-					rcDir.DeleteReplicationController(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchReplicationControllers/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchServiceAccounts() {
