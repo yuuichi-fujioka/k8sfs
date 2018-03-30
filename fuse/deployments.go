@@ -10,7 +10,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type deploymentsDir struct {
@@ -88,26 +87,21 @@ func (f *deploymentsDir) Create(name string, flags uint32, mode uint32) (file no
 	return nil, fuse.ENOSYS
 }
 
-func (f *deploymentsDir) AddDeployment(obj runtime.Object) {
-	if !f.UpdateDeployment(obj) {
-		newFile := NewDeploymentFile(obj)
+func (f *deploymentsDir) AddDeployment(deploy *v1beta1.Deployment) {
+	if !f.UpdateDeployment(deploy) {
+		newFile := NewDeploymentFile(deploy)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *deploymentsDir) UpdateDeployment(obj runtime.Object) (updated bool) {
-
-	deploy, ok := obj.(*v1beta1.Deployment)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *deploymentsDir) UpdateDeployment(deploy *v1beta1.Deployment) (updated bool) {
 
 	updated = false
 
 	name := deploy.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateDeploymentFile(file, obj)
+			UpdateDeploymentFile(file, deploy)
 			updated = true
 			break
 		}
@@ -115,12 +109,8 @@ func (f *deploymentsDir) UpdateDeployment(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *deploymentsDir) DeleteDeployment(obj runtime.Object) {
+func (f *deploymentsDir) DeleteDeployment(deploy *v1beta1.Deployment) {
 
-	deploy, ok := obj.(*v1beta1.Deployment)
-	if !ok {
-		panic("!!!!")
-	}
 	name := deploy.Name
 
 	delete(f.dirs, name)

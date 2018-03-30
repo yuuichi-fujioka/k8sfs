@@ -7,6 +7,7 @@ import (
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 
 	corev1 "k8s.io/api/core/v1"
+	v1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 )
@@ -141,50 +142,31 @@ func (me *nsWatcher) watchConfigMaps() {
 func (me *nsWatcher) watchDeployments() {
 	log.Printf("[Watch] start watchDeployments/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["deploy"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("deploy")
 	deployDir := dir.(*deploymentsDir)
-	for {
-		wi, err := k8s.Clientset.ExtensionsV1beta1().Deployments(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchDeployments(
+		me.Namespace,
+		func(deploy *v1beta1.Deployment) {
+			deployDir.AddDeployment(deploy)
+		},
+		func(olddeploy, newdeploy *v1beta1.Deployment) {
+			deployDir.UpdateDeployment(newdeploy)
+		},
+		func(deploy *v1beta1.Deployment) {
+			deployDir.DeleteDeployment(deploy)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["deploy"]:
-				log.Printf("[Watch] finish watchDeployments/%s\n", me.Namespace)
-				delete(me.closeChannels, "deploy")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["deploy"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "deploy")
+	<-me.closeChannels["deploy"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] deploy/Added on %s\n", me.Namespace)
-					deployDir.AddDeployment(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] deploy/Modified on %s\n", me.Namespace)
-					deployDir.UpdateDeployment(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] deploy/Deleted on %s\n", me.Namespace)
-					deployDir.DeleteDeployment(ev.Object)
-				}
-			}
-		}
-	}
-
+	log.Printf("[Watch] finish watchDeployments/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchEndpoints() {
