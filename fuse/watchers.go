@@ -262,47 +262,31 @@ func (me *nsWatcher) watchIngresses() {
 func (me *nsWatcher) watchPersistentVolumeClaims() {
 	log.Printf("[Watch] start watchPersistentVolumeClaims/%s\n", me.Namespace)
 
-	me.closeChannels["pvc"] = make(chan bool)
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("pvc")
 	pvcDir := dir.(*persistentVolumeClaimsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().PersistentVolumeClaims(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchPersistentVolumeClaims(
+		me.Namespace,
+		func(pvc *corev1.PersistentVolumeClaim) {
+			pvcDir.AddPersistentVolumeClaim(pvc)
+		},
+		func(oldpvc, newpvc *corev1.PersistentVolumeClaim) {
+			pvcDir.UpdatePersistentVolumeClaim(newpvc)
+		},
+		func(pvc *corev1.PersistentVolumeClaim) {
+			pvcDir.DeletePersistentVolumeClaim(pvc)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["pvc"]:
-				log.Printf("[Watch] finish watchPersistentVolumeClaims/%s\n", me.Namespace)
-				delete(me.closeChannels, "pvc")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["pvc"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "pvc")
+	<-me.closeChannels["pvc"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] pvc/Added on %s\n", me.Namespace)
-					pvcDir.AddPersistentVolumeClaim(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] pvc/Modified on %s\n", me.Namespace)
-					pvcDir.UpdatePersistentVolumeClaim(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] pvc/Deleted on %s\n", me.Namespace)
-					pvcDir.DeletePersistentVolumeClaim(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchPersistentVolumeClaims/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchReplicationControllers() {

@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type persistentVolumeClaimsDir struct {
@@ -81,26 +80,21 @@ func (f *persistentVolumeClaimsDir) Create(name string, flags uint32, mode uint3
 	return nil, fuse.ENOSYS
 }
 
-func (f *persistentVolumeClaimsDir) AddPersistentVolumeClaim(obj runtime.Object) {
-	if !f.UpdatePersistentVolumeClaim(obj) {
-		newFile := NewPersistentVolumeClaimFile(obj)
+func (f *persistentVolumeClaimsDir) AddPersistentVolumeClaim(pvc *corev1.PersistentVolumeClaim) {
+	if !f.UpdatePersistentVolumeClaim(pvc) {
+		newFile := NewPersistentVolumeClaimFile(pvc)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *persistentVolumeClaimsDir) UpdatePersistentVolumeClaim(obj runtime.Object) (updated bool) {
-
-	pvc, ok := obj.(*corev1.PersistentVolumeClaim)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *persistentVolumeClaimsDir) UpdatePersistentVolumeClaim(pvc *corev1.PersistentVolumeClaim) (updated bool) {
 
 	updated = false
 
 	name := pvc.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdatePersistentVolumeClaimFile(file, obj)
+			UpdatePersistentVolumeClaimFile(file, pvc)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *persistentVolumeClaimsDir) UpdatePersistentVolumeClaim(obj runtime.Obje
 	return
 }
 
-func (f *persistentVolumeClaimsDir) DeletePersistentVolumeClaim(obj runtime.Object) {
+func (f *persistentVolumeClaimsDir) DeletePersistentVolumeClaim(pvc *corev1.PersistentVolumeClaim) {
 
-	pvc, ok := obj.(*corev1.PersistentVolumeClaim)
-	if !ok {
-		panic("!!!!")
-	}
 	name := pvc.Name
 
 	delete(f.dirs, name)
