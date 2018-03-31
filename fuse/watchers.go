@@ -382,50 +382,31 @@ func (me *nsWatcher) watchSecrets() {
 func (me *nsWatcher) watchDaemonSets() {
 	log.Printf("[Watch] start watchDaemonSets/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["ds"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("ds")
 	dsDir := dir.(*daemonSetsDir)
-	for {
-		wi, err := k8s.Clientset.ExtensionsV1beta1().DaemonSets(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchDaemonSets(
+		me.Namespace,
+		func(ds *v1beta1.DaemonSet) {
+			dsDir.AddDaemonSet(ds)
+		},
+		func(oldds, newds *v1beta1.DaemonSet) {
+			dsDir.UpdateDaemonSet(newds)
+		},
+		func(ds *v1beta1.DaemonSet) {
+			dsDir.DeleteDaemonSet(ds)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["ds"]:
-				log.Printf("[Watch] finish watchDaemonSets/%s\n", me.Namespace)
-				delete(me.closeChannels, "ds")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["ds"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "ds")
+	<-me.closeChannels["ds"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] ds/Added on %s\n", me.Namespace)
-					dsDir.AddDaemonSet(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] ds/Modified on %s\n", me.Namespace)
-					dsDir.UpdateDaemonSet(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] ds/Deleted on %s\n", me.Namespace)
-					dsDir.DeleteDaemonSet(ev.Object)
-				}
-			}
-		}
-	}
-
+	log.Printf("[Watch] finish watchDaemonSets/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchReplicaSets() {

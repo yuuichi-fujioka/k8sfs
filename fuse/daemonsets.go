@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type daemonSetsDir struct {
@@ -81,26 +80,20 @@ func (f *daemonSetsDir) Create(name string, flags uint32, mode uint32) (file nod
 	return nil, fuse.ENOSYS
 }
 
-func (f *daemonSetsDir) AddDaemonSet(obj runtime.Object) {
-	if !f.UpdateDaemonSet(obj) {
-		newFile := NewDaemonSetFile(obj)
+func (f *daemonSetsDir) AddDaemonSet(ds *v1beta1.DaemonSet) {
+	if !f.UpdateDaemonSet(ds) {
+		newFile := NewDaemonSetFile(ds)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *daemonSetsDir) UpdateDaemonSet(obj runtime.Object) (updated bool) {
-
-	ds, ok := obj.(*v1beta1.DaemonSet)
-	if !ok {
-		panic("!!!!")
-	}
-
+func (f *daemonSetsDir) UpdateDaemonSet(ds *v1beta1.DaemonSet) (updated bool) {
 	updated = false
 
 	name := ds.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateDaemonSetFile(file, obj)
+			UpdateDaemonSetFile(file, ds)
 			updated = true
 			break
 		}
@@ -108,12 +101,8 @@ func (f *daemonSetsDir) UpdateDaemonSet(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *daemonSetsDir) DeleteDaemonSet(obj runtime.Object) {
+func (f *daemonSetsDir) DeleteDaemonSet(ds *v1beta1.DaemonSet) {
 
-	ds, ok := obj.(*v1beta1.DaemonSet)
-	if !ok {
-		panic("!!!!")
-	}
 	name := ds.Name
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
