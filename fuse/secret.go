@@ -2,25 +2,14 @@ package fuse
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func NewSecretFile(obj runtime.Object) *writableFile {
-	pvc, ok := obj.(*corev1.Secret)
-	if !ok {
-		panic("!!!!")
-	}
-
-	meta := NewMetaObj(&pvc.TypeMeta, &pvc.ObjectMeta)
-	return NewObjFile(obj, meta, nil)
+func NewSecretFile(secret *corev1.Secret) *writableFile {
+	meta := NewMetaObj(&secret.TypeMeta, &secret.ObjectMeta)
+	return NewObjFile(secret, meta, nil)
 }
 
-func UpdateSecretFile(f *writableFile, obj runtime.Object) {
-	pvc, ok := obj.(*corev1.Secret)
-	if !ok {
-		panic("!!!!")
-	}
-
-	meta := NewMetaObj(&pvc.TypeMeta, &pvc.ObjectMeta)
-	f.Update(obj, meta)
+func UpdateSecretFile(f *writableFile, secret *corev1.Secret) {
+	meta := NewMetaObj(&secret.TypeMeta, &secret.ObjectMeta)
+	f.Update(secret, meta)
 }

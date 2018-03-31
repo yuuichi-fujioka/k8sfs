@@ -352,49 +352,31 @@ func (me *nsWatcher) watchServiceAccounts() {
 func (me *nsWatcher) watchSecrets() {
 	log.Printf("[Watch] start watchSecrets/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["secrets"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("secrets")
-	secretsDir := dir.(*secretsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().Secrets(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
+	secretDir := dir.(*secretsDir)
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchSecrets(
+		me.Namespace,
+		func(secret *corev1.Secret) {
+			secretDir.AddSecret(secret)
+		},
+		func(oldsecret, newsecret *corev1.Secret) {
+			secretDir.UpdateSecret(newsecret)
+		},
+		func(secret *corev1.Secret) {
+			secretDir.DeleteSecret(secret)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["secrets"]:
-				log.Printf("[Watch] finish watchSecrets/%s\n", me.Namespace)
-				delete(me.closeChannels, "secrets")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["secret"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "secret")
+	<-me.closeChannels["secret"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] secrets/Added on %s\n", me.Namespace)
-					secretsDir.AddSecret(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] secrets/Modified on %s\n", me.Namespace)
-					secretsDir.UpdateSecret(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] secrets/Deleted on %s\n", me.Namespace)
-					secretsDir.DeleteSecret(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchSecrets/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchDaemonSets() {

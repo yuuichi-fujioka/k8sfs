@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type secretsDir struct {
@@ -81,26 +80,20 @@ func (f *secretsDir) Create(name string, flags uint32, mode uint32) (file nodefs
 	return nil, fuse.ENOSYS
 }
 
-func (f *secretsDir) AddSecret(obj runtime.Object) {
-	if !f.UpdateSecret(obj) {
-		newFile := NewSecretFile(obj)
+func (f *secretsDir) AddSecret(secret *corev1.Secret) {
+	if !f.UpdateSecret(secret) {
+		newFile := NewSecretFile(secret)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *secretsDir) UpdateSecret(obj runtime.Object) (updated bool) {
-
-	secrets, ok := obj.(*corev1.Secret)
-	if !ok {
-		panic("!!!!")
-	}
-
+func (f *secretsDir) UpdateSecret(secret *corev1.Secret) (updated bool) {
 	updated = false
 
-	name := secrets.Name
+	name := secret.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateSecretFile(file, obj)
+			UpdateSecretFile(file, secret)
 			updated = true
 			break
 		}
@@ -108,13 +101,8 @@ func (f *secretsDir) UpdateSecret(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *secretsDir) DeleteSecret(obj runtime.Object) {
-
-	secrets, ok := obj.(*corev1.Secret)
-	if !ok {
-		panic("!!!!")
-	}
-	name := secrets.Name
+func (f *secretsDir) DeleteSecret(secret *corev1.Secret) {
+	name := secret.Name
 
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
