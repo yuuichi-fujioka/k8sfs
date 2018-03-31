@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type replicaSetsDir struct {
@@ -81,26 +80,21 @@ func (f *replicaSetsDir) Create(name string, flags uint32, mode uint32) (file no
 	return nil, fuse.ENOSYS
 }
 
-func (f *replicaSetsDir) AddReplicaSet(obj runtime.Object) {
-	if !f.UpdateReplicaSet(obj) {
-		newFile := NewReplicaSetFile(obj)
+func (f *replicaSetsDir) AddReplicaSet(rs *v1beta1.ReplicaSet) {
+	if !f.UpdateReplicaSet(rs) {
+		newFile := NewReplicaSetFile(rs)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *replicaSetsDir) UpdateReplicaSet(obj runtime.Object) (updated bool) {
-
-	rs, ok := obj.(*v1beta1.ReplicaSet)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *replicaSetsDir) UpdateReplicaSet(rs *v1beta1.ReplicaSet) (updated bool) {
 
 	updated = false
 
 	name := rs.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateReplicaSetFile(file, obj)
+			UpdateReplicaSetFile(file, rs)
 			updated = true
 			break
 		}
@@ -108,12 +102,8 @@ func (f *replicaSetsDir) UpdateReplicaSet(obj runtime.Object) (updated bool) {
 	return
 }
 
-func (f *replicaSetsDir) DeleteReplicaSet(obj runtime.Object) {
+func (f *replicaSetsDir) DeleteReplicaSet(rs *v1beta1.ReplicaSet) {
 
-	rs, ok := obj.(*v1beta1.ReplicaSet)
-	if !ok {
-		panic("!!!!")
-	}
 	name := rs.Name
 
 	delete(f.dirs, name)

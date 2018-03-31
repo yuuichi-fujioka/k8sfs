@@ -8,8 +8,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	v1beta1 "k8s.io/api/extensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 )
 
 type nsWatcher struct {
@@ -412,48 +410,29 @@ func (me *nsWatcher) watchDaemonSets() {
 func (me *nsWatcher) watchReplicaSets() {
 	log.Printf("[Watch] start watchReplicaSets/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["rs"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("rs")
 	rsDir := dir.(*replicaSetsDir)
-	for {
-		wi, err := k8s.Clientset.ExtensionsV1beta1().ReplicaSets(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchReplicaSets(
+		me.Namespace,
+		func(rs *v1beta1.ReplicaSet) {
+			rsDir.AddReplicaSet(rs)
+		},
+		func(oldrs, newrs *v1beta1.ReplicaSet) {
+			rsDir.UpdateReplicaSet(newrs)
+		},
+		func(rs *v1beta1.ReplicaSet) {
+			rsDir.DeleteReplicaSet(rs)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["rs"]:
-				log.Printf("[Watch] finish watchReplicaSets/%s\n", me.Namespace)
-				delete(me.closeChannels, "rs")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["rs"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "rs")
+	<-me.closeChannels["rs"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] rs/Added on %s\n", me.Namespace)
-					rsDir.AddReplicaSet(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] rs/Modified on %s\n", me.Namespace)
-					rsDir.UpdateReplicaSet(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] rs/Deleted on %s\n", me.Namespace)
-					rsDir.DeleteReplicaSet(ev.Object)
-				}
-			}
-		}
-	}
-
+	log.Printf("[Watch] finish watchReplicaSets/%s\n", me.Namespace)
 }
