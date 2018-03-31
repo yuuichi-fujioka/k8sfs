@@ -322,49 +322,31 @@ func (me *nsWatcher) watchReplicationControllers() {
 func (me *nsWatcher) watchServiceAccounts() {
 	log.Printf("[Watch] start watchServiceAccounts/%s\n", me.Namespace)
 
-	me.lock.Lock()
-	me.closeChannels["sa"] = make(chan bool)
-	me.lock.Unlock()
 	nsDir := GetNamespaceDir(me.Namespace)
 	dir := nsDir.GetDir("sa")
 	saDir := dir.(*serviceAccountsDir)
-	for {
-		wi, err := k8s.Clientset.CoreV1().ServiceAccounts(me.Namespace).Watch(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
 
-		ch := wi.ResultChan()
+	closeCh := k8s.WatchServiceAccounts(
+		me.Namespace,
+		func(sa *corev1.ServiceAccount) {
+			saDir.AddServiceAccount(sa)
+		},
+		func(oldsa, newsa *corev1.ServiceAccount) {
+			saDir.UpdateServiceAccount(newsa)
+		},
+		func(sa *corev1.ServiceAccount) {
+			saDir.DeleteServiceAccount(sa)
+		},
+	)
+	defer func() { closeCh <- struct{}{} }()
 
-	loop:
-		for {
-			select {
-			case <-me.closeChannels["sa"]:
-				log.Printf("[Watch] finish watchServiceAccounts/%s\n", me.Namespace)
-				delete(me.closeChannels, "sa")
-				return
-			case ev, ok := <-ch:
-				if !ok {
-					break loop
-				}
+	me.lock.Lock()
+	me.closeChannels["sa"] = make(chan bool)
+	me.lock.Unlock()
+	defer delete(me.closeChannels, "sa")
+	<-me.closeChannels["sa"] // wait until stopAll is called.
 
-				switch ev.Type {
-				case watch.Added:
-					log.Printf("[Watch] sa/Added on %s\n", me.Namespace)
-					saDir.AddServiceAccount(ev.Object)
-
-				case watch.Modified:
-					// Update
-					log.Printf("[Watch] sa/Modified on %s\n", me.Namespace)
-					saDir.UpdateServiceAccount(ev.Object)
-				case watch.Deleted:
-					// Delete
-					log.Printf("[Watch] sa/Deleted on %s\n", me.Namespace)
-					saDir.DeleteServiceAccount(ev.Object)
-				}
-			}
-		}
-	}
+	log.Printf("[Watch] finish watchServiceAccounts/%s\n", me.Namespace)
 }
 
 func (me *nsWatcher) watchSecrets() {

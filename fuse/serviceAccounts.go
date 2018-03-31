@@ -8,7 +8,6 @@ import (
 	"github.com/hanwen/go-fuse/fuse/nodefs"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type serviceAccountsDir struct {
@@ -81,26 +80,20 @@ func (f *serviceAccountsDir) Create(name string, flags uint32, mode uint32) (fil
 	return nil, fuse.ENOSYS
 }
 
-func (f *serviceAccountsDir) AddServiceAccount(obj runtime.Object) {
-	if !f.UpdateServiceAccount(obj) {
-		newFile := NewServiceAccountFile(obj)
+func (f *serviceAccountsDir) AddServiceAccount(sa *corev1.ServiceAccount) {
+	if !f.UpdateServiceAccount(sa) {
+		newFile := NewServiceAccountFile(sa)
 		f.files[newFile.Name] = newFile
 	}
 }
 
-func (f *serviceAccountsDir) UpdateServiceAccount(obj runtime.Object) (updated bool) {
-
-	sa, ok := obj.(*corev1.ServiceAccount)
-	if !ok {
-		panic("!!!!")
-	}
-
+func (f *serviceAccountsDir) UpdateServiceAccount(sa *corev1.ServiceAccount) (updated bool) {
 	updated = false
 
 	name := sa.Name
 	for _, file := range f.files {
 		if file.Name == name+".yaml" {
-			UpdateServiceAccountFile(file, obj)
+			UpdateServiceAccountFile(file, sa)
 			updated = true
 			break
 		}
@@ -108,12 +101,7 @@ func (f *serviceAccountsDir) UpdateServiceAccount(obj runtime.Object) (updated b
 	return
 }
 
-func (f *serviceAccountsDir) DeleteServiceAccount(obj runtime.Object) {
-
-	sa, ok := obj.(*corev1.ServiceAccount)
-	if !ok {
-		panic("!!!!")
-	}
+func (f *serviceAccountsDir) DeleteServiceAccount(sa *corev1.ServiceAccount) {
 	name := sa.Name
 
 	delete(f.dirs, name)
