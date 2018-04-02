@@ -67,11 +67,12 @@ func (me *nsWatcher) watchPods() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["po"] = make(chan bool)
+	me.closeChannels["po"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "po")
-	<-me.closeChannels["po"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchPods/%s\n", me.Namespace)
 }
@@ -97,11 +98,12 @@ func (me *nsWatcher) watchServices() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["svc"] = make(chan bool)
+	me.closeChannels["svc"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "svc")
-	<-me.closeChannels["svc"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchServices/%s\n", me.Namespace)
 
@@ -128,11 +130,12 @@ func (me *nsWatcher) watchConfigMaps() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["cm"] = make(chan bool)
+	me.closeChannels["cm"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "cm")
-	<-me.closeChannels["cm"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchConfigMaps/%s\n", me.Namespace)
 }
@@ -158,11 +161,12 @@ func (me *nsWatcher) watchDeployments() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["deploy"] = make(chan bool)
+	me.closeChannels["deploy"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "deploy")
-	<-me.closeChannels["deploy"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchDeployments/%s\n", me.Namespace)
 }
@@ -188,11 +192,12 @@ func (me *nsWatcher) watchEndpoints() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["ep"] = make(chan bool)
+	me.closeChannels["ep"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "ep")
-	<-me.closeChannels["ep"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchEndpoints/%s\n", me.Namespace)
 }
@@ -218,11 +223,12 @@ func (me *nsWatcher) watchEvents() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["ev"] = make(chan bool)
+	me.closeChannels["ev"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "ev")
-	<-me.closeChannels["ev"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchEvents/%s\n", me.Namespace)
 }
@@ -248,11 +254,12 @@ func (me *nsWatcher) watchIngresses() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["ing"] = make(chan bool)
+	me.closeChannels["ing"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "ing")
-	<-me.closeChannels["ing"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchIngresses/%s\n", me.Namespace)
 }
@@ -278,11 +285,12 @@ func (me *nsWatcher) watchPersistentVolumeClaims() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["pvc"] = make(chan bool)
+	me.closeChannels["pvc"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "pvc")
-	<-me.closeChannels["pvc"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchPersistentVolumeClaims/%s\n", me.Namespace)
 }
@@ -308,11 +316,12 @@ func (me *nsWatcher) watchReplicationControllers() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["rc"] = make(chan bool)
+	me.closeChannels["rc"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "rc")
-	<-me.closeChannels["rc"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchReplicationControllers/%s\n", me.Namespace)
 }
@@ -338,11 +347,12 @@ func (me *nsWatcher) watchServiceAccounts() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["sa"] = make(chan bool)
+	me.closeChannels["sa"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "sa")
-	<-me.closeChannels["sa"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchServiceAccounts/%s\n", me.Namespace)
 }
@@ -368,11 +378,12 @@ func (me *nsWatcher) watchSecrets() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["secret"] = make(chan bool)
+	me.closeChannels["secret"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "secret")
-	<-me.closeChannels["secret"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchSecrets/%s\n", me.Namespace)
 }
@@ -398,11 +409,12 @@ func (me *nsWatcher) watchDaemonSets() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["ds"] = make(chan bool)
+	me.closeChannels["ds"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "ds")
-	<-me.closeChannels["ds"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchDaemonSets/%s\n", me.Namespace)
 }
@@ -428,11 +440,12 @@ func (me *nsWatcher) watchReplicaSets() {
 	)
 	defer func() { closeCh <- struct{}{} }()
 
+	ch := make(chan bool)
 	me.lock.Lock()
-	me.closeChannels["rs"] = make(chan bool)
+	me.closeChannels["rs"] = ch
 	me.lock.Unlock()
 	defer delete(me.closeChannels, "rs")
-	<-me.closeChannels["rs"] // wait until stopAll is called.
+	<-ch // wait until stopAll is called.
 
 	log.Printf("[Watch] finish watchReplicaSets/%s\n", me.Namespace)
 }
