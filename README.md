@@ -260,3 +260,30 @@ $ rm /mnt/k8s/default/deploy/nginx.yaml # Deletea a Deployment
 $ killall k8sfs
 $ fusermount -u /mnt/k8s
 ```
+
+## Use this on Docker
+
+### Run
+
+```
+$ docker run -ti --rm -v $(readlink -f ~/.kube):/root/.kube:ro --device /dev/fuse --privileged --name k8sfs fujioka/k8sfs
+```
+
+* alt terminal
+
+```
+$ docker exec -ti k8sfs ls /mnt/
+total 0
+drwxr-xr-x 1 root root 4096 Feb  7 23:52 .
+drwxr-xr-x 1 root root  178 Apr  5 00:21 ..
+drwxr-xr-x 0 root root 4096 Feb  7 23:53 default
+-rw-r--r-- 1 root root  236 Feb  7 23:53 default.yaml
+drwxr-xr-x 0 root root 4096 Feb  8 02:20 helm
+-rw-r--r-- 1 root root  408 Feb  8 02:20 helm.yaml
+drwxr-xr-x 0 root root 4096 Feb  8 02:35 ingress
+-rw-r--r-- 1 root root  239 Feb  8 02:35 ingress.yaml
+drwxr-xr-x 0 root root 4096 Feb  7 23:53 kube-public
+-rw-r--r-- 1 root root  245 Feb  7 23:53 kube-public.yaml
+drwxr-xr-x 0 root root 4096 Feb  7 23:52 kube-system
+-rw-r--r-- 1 root root  244 Feb  7 23:52 kube-system.yaml
+```
