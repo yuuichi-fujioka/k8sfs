@@ -64,10 +64,7 @@ func (f *namespacesDir) Unlink(name string) (code fuse.Status) {
 	}
 
 	nsname := strings.TrimSuffix(name, ".yaml")
-	err := k8s.DeleteNamespace(nsname)
-	if err != nil {
-		return fuse.EIO
-	}
+	k8s.DeleteNamespaceLazy(nsname)
 	return fuse.OK
 }
 

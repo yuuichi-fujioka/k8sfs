@@ -62,10 +62,7 @@ func (f *deploymentsDir) Unlink(name string) (code fuse.Status) {
 	log.Printf("Unlink: %s at %s", name, "deploy")
 	// TODO
 	deployName := strings.TrimSuffix(name, ".yaml")
-	err := k8s.DeleteDeployment(f.Namespace, deployName)
-	if err != nil {
-		return fuse.EIO
-	}
+	k8s.DeleteDeploymentLazy(f.Namespace, deployName)
 	return fuse.OK
 }
 

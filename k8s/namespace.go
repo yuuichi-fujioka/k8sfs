@@ -3,6 +3,7 @@ package k8s
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/ghodss/yaml"
 
@@ -15,6 +16,8 @@ import (
 )
 
 func CreateNamespace(name string) (*corev1.Namespace, error) {
+	flagDeleteCancelSignal("ns", name)
+
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -24,6 +27,7 @@ func CreateNamespace(name string) (*corev1.Namespace, error) {
 }
 
 func CreateUpdateNamespaceWithYaml(name string, payload []byte) (*corev1.Namespace, error) {
+	flagDeleteCancelSignal("ns", name)
 
 	ns := &corev1.Namespace{}
 	err := yaml.Unmarshal(payload, ns)
@@ -52,6 +56,20 @@ func CreateUpdateNamespaceWithYaml(name string, payload []byte) (*corev1.Namespa
 
 func DeleteNamespace(name string) error {
 	return Clientset.CoreV1().Namespaces().Delete(name, &metav1.DeleteOptions{})
+}
+
+func DeleteNamespaceLazy(name string) {
+	initDeleteCancelSignal("ns", name)
+	go func() {
+		time.Sleep(1 * time.Second)
+		if isFlagedDeleteCancelSignal("ns", name) {
+			return
+		}
+		err := DeleteNamespace(name)
+		if err != nil {
+			panic(err)
+		}
+	}()
 }
 
 type NamespaceAddFunc func(obj *corev1.Namespace)

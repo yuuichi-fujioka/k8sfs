@@ -239,7 +239,6 @@ EOF
 ```
 
 If metadata.name and file name is not same, error will be occurred.
-Direct editing with vi is not recommended because vi may delete a file.
 
 * Delete
 
