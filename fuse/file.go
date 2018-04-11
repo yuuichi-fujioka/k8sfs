@@ -35,6 +35,7 @@ func (f *writableFile) Update(obj runtime.Object, meta *metaObj) {
 		panic("!!!")
 	}
 	f.data = yaml
+	f.size = len(yaml)
 	f.ctime = uint64(meta.GetCreationTimestamp().Unix())
 }
 
