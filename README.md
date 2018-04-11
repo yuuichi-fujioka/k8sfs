@@ -13,7 +13,7 @@ Blank: Not Implemented
 | Container                       |                    | :heavy_minus_sign: | :heavy_minus_sign: | :heavy_minus_sign: |
 | CronJob                         |                    |                    |                    |                    |
 | DaemonSet                       | :heavy_check_mark: |                    |                    |                    |
-| Deployment                      | :heavy_check_mark: |                    |                    | :heavy_check_mark: |
+| Deployment                      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | Job                             |                    |                    |                    |                    |
 | Pod                             | :heavy_check_mark: |                    |                    |                    |
 | ReplicaSet                      | :heavy_check_mark: |                    |                    |                    |

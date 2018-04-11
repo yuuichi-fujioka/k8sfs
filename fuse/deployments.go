@@ -60,7 +60,11 @@ func (f *deploymentsDir) GetDir(name string) DirEntry {
 
 func (f *deploymentsDir) Unlink(name string) (code fuse.Status) {
 	log.Printf("Unlink: %s at %s", name, "deploy")
-	// TODO
+	code = f.RemoveTmpFile(name)
+	if code != fuse.ENOENT {
+		return
+	}
+
 	deployName := strings.TrimSuffix(name, ".yaml")
 	k8s.DeleteDeploymentLazy(f.Namespace, deployName)
 	return fuse.OK
@@ -81,12 +85,12 @@ func (f *deploymentsDir) Rmdir() (code fuse.Status) {
 func (f *deploymentsDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
 	log.Printf("Create: %s on %s with 0x%x 0x%x", name, "deploy", flags, mode)
 	// TODO
-	return nil, fuse.ENOSYS
+	return f.AddTmpFile(name, f), fuse.OK
 }
 
 func (f *deploymentsDir) AddDeployment(deploy *v1beta1.Deployment) {
 	if !f.UpdateDeployment(deploy) {
-		newFile := NewDeploymentFile(deploy)
+		newFile := NewDeploymentFile(deploy, f)
 		f.files[newFile.Name] = newFile
 	}
 }
@@ -113,4 +117,30 @@ func (f *deploymentsDir) DeleteDeployment(deploy *v1beta1.Deployment) {
 	delete(f.dirs, name)
 	delete(f.files, name+".yaml")
 
+}
+
+func (f *deploymentsDir) HandleRelease(wf *writableFile) {
+	log.Printf("Deployment/HandleRelease: %s", wf.Name)
+	if strings.HasPrefix(wf.Name, ".") {
+		// This is the Hidden File.
+		// TODO Delete this file
+		return
+	}
+	if !strings.HasSuffix(wf.Name, ".yaml") {
+		// This is the Hidden File.
+		// TODO Delete this file
+		return
+	}
+	if !wf.changed {
+		// Deployment is Not Changed
+		return
+	}
+
+	deployname := strings.TrimSuffix(wf.Name, ".yaml")
+	deploy, err := k8s.CreateUpdateDeploymentWithYaml(f.Namespace, deployname, wf.data)
+	if err != nil {
+		log.Printf("Creating/Updating Deployment is failed because %v. data: %s\n", err, wf.data)
+		return
+	}
+	log.Printf("Deploy will be created/updated: %v\n", deploy)
 }
