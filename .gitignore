@@ -1,3 +1,5 @@
 /vendor
 /k8sfs
+/cmd/k8sfs/k8sfs
+/cmd/k8sfsro/k8sfsro
 *.prof

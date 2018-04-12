@@ -68,14 +68,14 @@
 * マウントする
 
 ```
-go get -u github.com/yuuichi-ubuntu /k8sfs
+go get -u github.com/yuuichi-fujioka/k8sfs/cmd/k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s  # パスはなんでもいい。
 ```
 
 * namespaceを指定していてマウントする
 
 ```
-go get -u github.com/yuuichi-ubuntu /k8sfs
+go get -u github.com/yuuichi-fujioka/k8sfs/cmd/k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # default namespaceだけマウントする
 ```
 
@@ -84,8 +84,15 @@ k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # default namespace
 * 読み取り専用でマウントする
 
 ```
-$ go get -u github.com/yuuichi-ubuntu /k8sfs
+$ go get -u github.com/yuuichi-fujioka/k8sfs/cmd/k8sfs
 $ k8sfs -kubeconfig ~/.kube/config -readonly /mnt/k8s
+```
+
+or 
+
+```
+$ go get -u github.com/yuuichi-fujioka/k8sfs/cmd/k8sfsro
+$ k8sfsro -kubeconfig ~/.kube/config /mnt/k8s
 ```
 
 * 見る

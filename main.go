@@ -1,4 +1,4 @@
-package main
+package k8sfs
 
 import (
 	"flag"
@@ -10,7 +10,7 @@ import (
 	"github.com/yuuichi-fujioka/k8sfs/k8s"
 )
 
-func main() {
+func Main(forceReadOnly bool) {
 	startHandlingSignal()
 
 	var kubeconfig *string
@@ -21,7 +21,13 @@ func main() {
 	}
 
 	namespace := flag.String("namespace", "", "top level namespace. if this is blank, all namespaces will be mount")
-	readOnly := flag.Bool("readonly", false, "read only mode.")
+
+	var readOnly bool
+	if !forceReadOnly {
+		flag.BoolVar(&readOnly, "readonly", false, "read only mode.")
+	} else {
+		readOnly = true
+	}
 
 	flag.Parse()
 
@@ -31,7 +37,7 @@ func main() {
 	log.Printf("argments: %v\n", flag.Args())
 
 	k8s.Init(*kubeconfig)
-	fuse.TestMain(flag.Arg(0), *namespace, *readOnly)
+	fuse.TestMain(flag.Arg(0), *namespace, readOnly)
 }
 
 func homeDir() string {

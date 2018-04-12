@@ -68,14 +68,14 @@ NOTE: The feature is not tested yet.
 * Mount
 
 ```
-$ go get -u github.com/yuuichi-ubuntu /k8sfs
+$ go get -u github.com/yuuichi-fujioka/k8sfs
 $ k8sfs -kubeconfig ~/.kube/config /mnt/k8s
 ```
 
 * Mount with namespace
 
 ```
-go get -u github.com/yuuichi-ubuntu /k8sfs
+go get -u github.com/yuuichi-fujioka/k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # mount only ns/default
 ```
 
@@ -84,8 +84,15 @@ Error doesn't report even if namespace is not exit.
 * Mount with Read Only Mode
 
 ```
-$ go get -u github.com/yuuichi-ubuntu /k8sfs
+$ go get -u github.com/yuuichi-fujioka/k8sfs
 $ k8sfs -kubeconfig ~/.kube/config -readonly /mnt/k8s
+```
+
+or 
+
+```
+$ go get -u github.com/yuuichi-fujioka/k8sfs/cmd/k8sfsro
+$ k8sfsro -kubeconfig ~/.kube/config /mnt/k8s
 ```
 
 * Check
