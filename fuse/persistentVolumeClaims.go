@@ -68,7 +68,7 @@ func (f *persistentVolumeClaimsDir) Mkdir(name string, mode uint32) fuse.Status 
 	return fuse.ENOSYS
 }
 
-func (f *persistentVolumeClaimsDir) Rmdir() (code fuse.Status) {
+func (f *persistentVolumeClaimsDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", "pvc")
 	// TODO
 	return fuse.ENOSYS

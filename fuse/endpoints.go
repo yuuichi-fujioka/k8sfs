@@ -68,7 +68,7 @@ func (f *endpointsDir) Mkdir(name string, mode uint32) fuse.Status {
 	return fuse.ENOSYS
 }
 
-func (f *endpointsDir) Rmdir() (code fuse.Status) {
+func (f *endpointsDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", "ep")
 	// TODO
 	return fuse.ENOSYS

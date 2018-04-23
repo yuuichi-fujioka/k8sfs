@@ -85,7 +85,7 @@ func (f *namespacesDir) Mkdir(name string, mode uint32) fuse.Status {
 	}
 }
 
-func (f *namespacesDir) Rmdir() (code fuse.Status) {
+func (f *namespacesDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", "namespaces")
 	// TODO
 	return fuse.ENOSYS

@@ -80,7 +80,10 @@ func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
 	fileName := names[len(names)-1]
 
 	dir := me.root.GetDir(parentName)
-	file := dir.GetChildFiles()[fileName]
+	file, ok := dir.GetChildFiles()[fileName]
+	if !ok {
+		return fuse.ENOENT
+	}
 	if !IsWritable(file) {
 		return fuse.EPERM
 	}
@@ -90,11 +93,14 @@ func (me *K8sFs) Unlink(name string, context *fuse.Context) (code fuse.Status) {
 func (me *K8sFs) Rmdir(name string, context *fuse.Context) (code fuse.Status) {
 	log.Printf("[FUSE] Rmdir: %s\n", name)
 
-	dir := me.root.GetDir(name)
+	names := strings.Split(name, "/")
+	parentName := strings.Join(names[:len(names)-1], "/")
+
+	dir := me.root.GetDir(parentName)
 	if !IsWritable(dir.GetFile()) {
 		return fuse.EPERM
 	}
-	return dir.Rmdir()
+	return dir.Rmdir(names[len(names)-1])
 }
 
 func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Context) (file nodefs.File, code fuse.Status) {
@@ -108,6 +114,26 @@ func (me *K8sFs) Create(name string, flags uint32, mode uint32, context *fuse.Co
 		return nil, fuse.EPERM
 	}
 	return dir.Create(names[len(names)-1], flags, mode)
+}
+
+func (me *K8sFs) Rename(oldName string, newName string, context *fuse.Context) (code fuse.Status) {
+	log.Printf("[FUSE] Rename: %s %s\n", oldName, newName)
+	names := strings.Split(oldName, "/")
+	parentName := strings.Join(names[:len(names)-1], "/")
+
+	dir := me.root.GetDir(parentName)
+	if !IsWritable(dir.GetFile()) {
+		return fuse.EPERM
+	}
+
+	newNames := strings.Split(newName, "/")
+	newParentName := strings.Join(newNames[:len(newNames)-1], "/")
+	if parentName == newParentName {
+
+		return dir.RenameOnSameDir(names[len(names)-1], newNames[len(newNames)-1])
+	} else {
+		return dir.Rename(names[len(names)-1], newName)
+	}
 }
 
 var Fs *K8sFs

@@ -68,7 +68,7 @@ func (f *servicesDir) Mkdir(name string, mode uint32) fuse.Status {
 	return fuse.ENOSYS
 }
 
-func (f *servicesDir) Rmdir() (code fuse.Status) {
+func (f *servicesDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", "svc")
 	// TODO
 	return fuse.ENOSYS

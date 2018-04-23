@@ -76,7 +76,7 @@ func (f *deploymentsDir) Mkdir(name string, mode uint32) fuse.Status {
 	return fuse.ENOSYS
 }
 
-func (f *deploymentsDir) Rmdir() (code fuse.Status) {
+func (f *deploymentsDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", "deploy")
 	// TODO
 	return fuse.ENOSYS

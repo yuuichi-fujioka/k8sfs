@@ -88,6 +88,12 @@ func (f *namespaceDir) GetDir(name string) DirEntry {
 		}
 	}
 
+	for k, child := range f.tmpDirs {
+		if k == names[0] {
+			return child.GetDir(strings.Join(names[1:], "/"))
+		}
+	}
+
 	return nil
 }
 
@@ -99,14 +105,20 @@ func (f *namespaceDir) Unlink(name string) (code fuse.Status) {
 
 func (f *namespaceDir) Mkdir(name string, mode uint32) fuse.Status {
 	log.Printf("Mkdir: %s at %s", name, f.Name)
-	// TODO
-	return fuse.ENOSYS
+
+	if strings.HasPrefix(name, ".") {
+		f.AddTmpDir(name)
+		return fuse.OK
+	} else {
+		return fuse.ENOSYS
+	}
 }
 
-func (f *namespaceDir) Rmdir() (code fuse.Status) {
+func (f *namespaceDir) Rmdir(name string) (code fuse.Status) {
 	log.Printf("Rmdir: %s", f.Name)
 	// TODO
-	return fuse.ENOSYS
+	code = f.RemoveTmpDir(name)
+	return
 }
 
 func (f *namespaceDir) Create(name string, flags uint32, mode uint32) (file nodefs.File, code fuse.Status) {
