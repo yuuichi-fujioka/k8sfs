@@ -79,7 +79,7 @@ go get -u github.com/yuuichi-fujioka/k8sfs
 k8sfs -kubeconfig ~/.kube/config /mnt/k8s -namespace default # mount only ns/default
 ```
 
-Error doesn't report even if namespace is not exit.
+Error doesn't report even if namespace doesn't exist.
 
 * Mount with Read Only Mode
 
